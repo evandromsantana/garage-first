@@ -1,0 +1,50 @@
+globalThis.__BUILD_MANIFEST = {
+  "pages": {
+    "/_app": [
+      "static/chunks/0m~k_next_dist_compiled_0afrfc~._.js",
+      "static/chunks/0m~k_next_dist_shared_lib_0v627l_._.js",
+      "static/chunks/0m~k_next_dist_client_04te0fb._.js",
+      "static/chunks/0m~k_next_dist_10o.2om._.js",
+      "static/chunks/0m~k_next_app_0zw-~hb.js",
+      "static/chunks/[next]_entry_page-loader_ts_09lez~h._.js",
+      "static/chunks/0m~k_react-dom_12fws55._.js",
+      "static/chunks/0m~k_0jhvv~t._.js",
+      "static/chunks/[root-of-the-server]__0iqdu44._.js",
+      "static/chunks/garage-ninja_pages__app_07xvfw~._.js",
+      "static/chunks/turbopack-garage-ninja_pages__app_0m_oe85._.js"
+    ],
+    "/_error": [
+      "static/chunks/0m~k_next_dist_compiled_0afrfc~._.js",
+      "static/chunks/0m~k_next_dist_shared_lib_0rdr_--._.js",
+      "static/chunks/0m~k_next_dist_client_04te0fb._.js",
+      "static/chunks/0m~k_next_dist_0y8fazh._.js",
+      "static/chunks/[next]_entry_page-loader_ts_0ga0juu._.js",
+      "static/chunks/0m~k_react-dom_12fws55._.js",
+      "static/chunks/0m~k_0jhvv~t._.js",
+      "static/chunks/[root-of-the-server]__00bgbp6._.js",
+      "static/chunks/garage-ninja_pages__error_07xvfw~._.js",
+      "static/chunks/turbopack-garage-ninja_pages__error_0ob_v3y._.js"
+    ]
+  },
+  "devFiles": [],
+  "polyfillFiles": [
+    "static/chunks/0m~k_next_dist_build_polyfills_polyfill-nomodule.js"
+  ],
+  "lowPriorityFiles": [
+    "static/development/_buildManifest.js",
+    "static/development/_ssgManifest.js",
+    "static/development/_clientMiddlewareManifest.js"
+  ],
+  "rootMainFiles": [
+    "static/chunks/[turbopack]_browser_dev_hmr-client_hmr-client_ts_0uyv3yj._.js",
+    "static/chunks/0m~k_next_dist_compiled_next-devtools_index_01s7pgb.js",
+    "static/chunks/0m~k_next_dist_compiled_react-dom_0pz7q62._.js",
+    "static/chunks/0m~k_next_dist_compiled_react-server-dom-turbopack_0vzex6s._.js",
+    "static/chunks/0m~k_next_dist_compiled_0o4d12n._.js",
+    "static/chunks/0m~k_next_dist_client_011bdc7._.js",
+    "static/chunks/0m~k_next_dist_0h20qcp._.js",
+    "static/chunks/0m~k_@swc_helpers_cjs_0kteupy._.js",
+    "static/chunks/garage-ninja_0rqeker._.js",
+    "static/chunks/turbopack-garage-ninja_0ny~j8~._.js"
+  ]
+};

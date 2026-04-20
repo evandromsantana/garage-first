@@ -1,0 +1,102 @@
+# Cursor IDE Rules for Garage Ninja
+
+## Project Overview
+- **Stack**: Next.js 16 + React 19 + TypeScript + Tailwind CSS v4 + Prisma + SQLite
+- **Architecture**: App Router with Server Components + Client Components
+- **Styling**: Brutalist design system with high contrast (black/white)
+- **Database**: Prisma ORM with SQLite
+
+## Code Style & Conventions
+
+### TypeScript
+- Strict mode enabled - never use `any`
+- Use explicit return types on exported functions
+- Prefer interfaces over types for object shapes
+- Use path alias `@/` for all imports from `src/`
+
+### React Components
+- Server Components by default (no 'use client' unless needed)
+- Add `'use client'` only for:
+  - Interactive components (hooks, event handlers)
+  - Browser APIs usage
+  - Client-side state management
+- Use React.FC or explicit props interfaces
+- PascalCase for component files and names
+
+### File Organization
+```
+src/
+├── app/           # Next.js App Router pages
+├── components/    # React components
+│   ├── ui/       # shadcn/ui components
+│   └── dashboard/ # Dashboard-specific components
+├── lib/          # Utilities, constants, database
+├── types/        # Shared TypeScript types
+└── hooks/        # Custom React hooks
+```
+
+### Naming Conventions
+- **Components**: PascalCase (e.g., `DashboardClient.tsx`)
+- **Hooks**: camelCase with 'use' prefix (e.g., `useVehicleData.ts`)
+- **Utils**: camelCase (e.g., `formatCurrency.ts`)
+- **Types**: PascalCase (e.g., `VehicleSummary`)
+- **Constants**: UPPER_SNAKE_CASE for values, camelCase for objects
+
+### Imports Order
+1. React/Next imports
+2. Third-party libraries
+3. Internal types (`@/types`)
+4. Internal utils/constants (`@/lib/*`)
+5. Internal components (`@/components/*`)
+6. Relative imports (last resort)
+
+### Server Actions (actions.ts)
+- Always use shared types from `@/types`
+- Use `revalidatePath()` after mutations
+- Return plain objects (not JSX)
+- Handle errors appropriately
+
+### Styling (Tailwind v4)
+- Use CSS-first configuration in `globals.css`
+- Brutalist design tokens:
+  - `border-4 border-foreground` for cards
+  - `rounded-none` for sharp corners
+  - `font-black uppercase tracking-tighter` for headers
+  - `shadow-[2px_2px_0_0_var(--foreground)]` for shadows
+- Prefer `hsl()` colors from CSS variables
+- Use `hover:bg-foreground hover:text-background` for interactive states
+
+### Database (Prisma)
+- Import `prisma` from `@/lib/db` (singleton)
+- Use `include` for relations
+- Run `npx prisma generate` after schema changes
+- Use `npx prisma studio` to browse data
+
+### Form Handling
+- Use Server Actions for form submissions
+- Use `FormData` for simple forms
+- Use controlled components with state for complex forms
+- Always validate input server-side
+
+### Error Handling
+- Use try/catch in async functions
+- Show user-friendly error messages with `sonner` toast
+- Log errors to console in development
+
+### Performance
+- Use Server Components when possible
+- Minimize 'use client' usage
+- Use `Suspense` for async components
+- Optimize images with Next.js Image component
+
+## Available Workflows
+- `/db-workflow` - Database operations with Prisma
+- `/component-workflow` - Create new components
+- `/dev-workflow` - Development scripts
+
+## Critical Rules
+1. **Never** use `console.log` in production code
+2. **Always** use TypeScript strict types
+3. **Never** import from relative paths when `@/` alias is available
+4. **Always** run `npm run lint` before committing
+5. **Never** modify `node_modules` or generated files

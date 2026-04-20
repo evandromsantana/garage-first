@@ -1,0 +1,55 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Vehicle {
+  id              String   @id @default(uuid())
+  model           String
+  year            Int
+  currentKm       Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  maintenanceLogs MaintenanceLog[]
+}
+
+model MaintenanceLog {
+  id            String   @id @default(uuid())
+  vehicleId     String
+  type          String   // PREVENTIVE, CORRECTIVE, UPGRADE
+  description   String
+  kmAtService   Int
+  cost          Float?
+  status        String   @default("PENDING") // PENDING, COMPLETED, CANCELLED
+  diagramCode   String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  vehicle       Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  expenses      ProjectExpense[]
+}
+
+model ProjectExpense {
+  id              String   @id @default(uuid())
+  maintenanceId   String
+  itemName        String
+  itemCost        Float
+  isOriginalPart  Boolean  @default(false)
+  createdAt       DateTime @default(now())
+
+  maintenanceLog  MaintenanceLog @relation(fields: [maintenanceId], references: [id], onDelete: Cascade)
+}
+
+model TechnicalSpec {
+  id          String   @id @default(uuid())
+  category    String
+  component   String
+  torqueNm    Float?
+  notes       String?
+  diagramCode String?
+}
