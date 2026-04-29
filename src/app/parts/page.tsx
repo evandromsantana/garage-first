@@ -2,26 +2,19 @@ import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { ArrowLeft, Wrench, Package, List } from "lucide-react"
+import { PageHeader } from "@/components/page-header"
 import { getAllExpenses } from "@/app/actions"
+import { requireAuth } from "@/lib/auth-server"
 import { ProjectExpense } from "@/types"
 import { formatCurrency } from "@/lib/utils"
 
 export default async function PartsPage() {
-  const expenses = await getAllExpenses()
+  const user = await requireAuth()
+  const expenses = await getAllExpenses(user.id)
 
   return (
     <div className="min-h-screen bg-background font-mono">
-      <header className="sticky top-0 z-10 border-b-4 border-foreground bg-background px-4 py-4 mb-4 shadow-[0_4px_0_0_colord(var(--foreground))]">
-        <div className="flex items-center gap-3">
-          <Link href="/" className="p-2 border-4 border-foreground text-foreground hover:bg-foreground hover:text-background rounded-none transition-none shadow-[2px_2px_0_0_colord(var(--foreground))] active:translate-y-1 active:shadow-none">
-            <ArrowLeft className="h-6 w-6 font-black" />
-          </Link>
-          <div className="flex items-center gap-2">
-            <Package className="h-6 w-6" />
-            <h1 className="text-2xl font-black uppercase tracking-tighter">Inventário</h1>
-          </div>
-        </div>
-      </header>
+      <PageHeader title="Inventário" icon={<Package className="h-6 w-6" />} backHref="/" />
 
       <main className="p-4 space-y-6 pb-24">
         <div className="grid grid-cols-2 gap-4">

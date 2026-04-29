@@ -1,17 +1,28 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Merriweather, Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { MobileNav } from "@/components/mobile-nav";
+import { ErrorBoundary } from "@/components/error-boundary";
+import { OfflineIndicator } from "@/components/offline-indicator";
+import { ThemeScript } from "@/components/theme-script";
+import { QueryProvider } from "@/lib/query-client";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// Font estilo Kindle - serif para leitura confortável
+const merriweather = Merriweather({
+  variable: "--font-merriweather",
+  weight: ["300", "400", "700", "900"],
+  style: ["normal", "italic"],
   subsets: ["latin"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+// Font secundária - sans-serif para UI
+const inter = Inter({
+  variable: "--font-inter",
+  weight: ["300", "400", "500", "600", "700", "800", "900"],
   subsets: ["latin"],
+  display: "swap",
 });
 
 export const viewport: Viewport = {
@@ -39,20 +50,19 @@ export default function RootLayout({
   return (
     <html
       lang="pt-BR"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${merriweather.variable} ${inter.variable} h-full antialiased`}
       suppressHydrationWarning
     >
-      <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `document.documentElement.classList.remove('dark'); localStorage.removeItem('theme');`
-          }}
-        />
-      </head>
-      <body suppressHydrationWarning className="min-h-full flex flex-col bg-background text-foreground tracking-tight selection:bg-foreground/10 pb-16">
-        {children}
-        <Toaster position="top-center" />
-        <MobileNav />
+      <body suppressHydrationWarning className="min-h-full flex flex-col bg-background text-foreground tracking-tight selection:bg-foreground/10 pb-16 font-serif">
+        <ThemeScript />
+        <QueryProvider>
+          <ErrorBoundary>
+            <OfflineIndicator />
+            {children}
+          </ErrorBoundary>
+          <Toaster position="top-center" />
+          <MobileNav />
+        </QueryProvider>
       </body>
     </html>
   );

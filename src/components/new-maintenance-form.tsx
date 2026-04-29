@@ -10,18 +10,12 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Plus, Trash2, Wrench } from "lucide-react"
 import { toast } from "sonner"
 import { MaintenanceType, PartInput } from "@/types"
-import { MAINTENANCE_TYPE_LABELS } from "@/lib/constants"
-import { formatCurrency } from "@/lib/utils"
+import { MAINTENANCE_TYPE_LABELS, TYPE_SUGGESTIONS } from "@/lib/constants/maintenance"
+import { formatCurrency } from "@/lib"
 import { PageHeader } from "@/components/page-header"
 
 interface Part extends PartInput {
   id: string;
-}
-
-const TYPE_SUGGESTIONS: Record<MaintenanceType, string[]> = {
-  PREVENTIVE: ["Troca de Óleo e Filtro", "Revisão Preventiva", "Ajuste de Corrente", "Verificação de Freios"],
-  CORRECTIVE: ["Reparo no Sistema de Freios", "Ajuste de Embreagem", "Correção de Vazamento", "Substituição de Peça"],
-  UPGRADE: ["Instalação de Escapamento", "Upgrade de Suspensão", "Troca de Pneus", "Melhoria no Sistema de Freios"]
 }
 
 export default function NewMaintenanceForm({ vehicleId, initialKm }: { vehicleId: string, initialKm: number }) {

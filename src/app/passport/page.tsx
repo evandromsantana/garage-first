@@ -1,11 +1,13 @@
 import { getVehicleWithData, getFirstVehicle } from "@/app/actions"
+import { requireAuth } from "@/lib/auth-server"
 import { Badge } from "@/components/ui/badge"
 import { ShieldCheck, Award, Wrench, Calendar, Settings, ChevronLeft } from "lucide-react"
 import Link from "next/link"
 import { PrintButton } from "@/components/print-button"
 
 export default async function PassportPage() {
-  const baseVehicle = await getFirstVehicle()
+  const user = await requireAuth()
+  const baseVehicle = await getFirstVehicle(user.id)
   if (!baseVehicle) {
     return <div className="p-4 font-mono">Veículo base não encontrado. Rode a home antes.</div>
   }

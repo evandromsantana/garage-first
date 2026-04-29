@@ -11,11 +11,15 @@ import {
 } from '@/types'
 
 export async function createVehicle(data: CreateVehicleInput) {
+  const { requireAuth } = await import('@/lib/auth-server')
+  const user = await requireAuth()
+  
   return prisma.vehicle.create({
     data: {
       model: data.model,
       year: data.year,
       currentKm: data.currentKm ?? 0,
+      userId: user.id,
     },
   })
 }
@@ -61,8 +65,8 @@ export async function createMaintenanceLog(data: CreateMaintenanceInput) {
       type: data.type,
       description: data.description,
       kmAtService: data.kmAtService,
-      cost: data.cost,
-      diagramCode: data.diagramCode,
+      cost: data.cost ?? null,
+      diagramCode: data.diagramCode ?? null,
       status: 'PENDING',
     },
   })
@@ -160,17 +164,40 @@ export async function searchTechnicalSpecs(query: string) {
   })
 }
 
-export async function getFirstVehicle() {
-  return prisma.vehicle.findFirst()
+export async function getFirstVehicle(userId: string) {
+  return prisma.vehicle.findFirst({
+    where: { userId }
+  })
 }
 
-export async function getAllExpenses() {
+export async function getAllExpenses(userId: string) {
   return prisma.projectExpense.findMany({
     include: {
-      maintenanceLog: true,
+      maintenanceLog: {
+        include: {
+          vehicle: true
+        }
+      },
+    },
+    where: {
+      maintenanceLog: {
+        vehicle: {
+          userId
+        }
+      }
     },
     orderBy: {
       createdAt: 'desc'
     }
   })
+}
+
+export async function runAgentAction(agentName: string) {
+  const { agentManager } = await import('@/lib/agents')
+  if (agentName === 'all') {
+    await agentManager.runFullAnalysis()
+  } else {
+    await agentManager.runAgent(agentName)
+  }
+  revalidatePath('/agents')
 }

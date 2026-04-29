@@ -9,6 +9,7 @@ import { useMaintenance } from "@/hooks/use-maintenance"
 import { Loading } from "@/components/ui/loading"
 import { ErrorMessage } from "@/components/ui/error-message"
 import { calculateTotalSpent, formatCurrency } from "@/lib/utils"
+import { PageHeader } from "@/components/page-header"
 import Link from "next/link"
 
 export default function MaintenanceDetailPage() {
@@ -37,14 +38,7 @@ export default function MaintenanceDetailPage() {
 
   return (
     <div className="min-h-screen bg-background font-mono text-foreground">
-      <header className="sticky top-0 z-10 border-b-4 border-foreground bg-background px-4 py-4">
-        <div className="flex items-center gap-3">
-          <Link href="/" className="p-2 border-2 border-foreground rounded-none hover:bg-foreground hover:text-background transition-none inline-flex items-center justify-center h-10 w-10">
-            <ArrowLeft className="h-5 w-5" />
-          </Link>
-          <h1 className="text-xl font-black uppercase tracking-widest">Detalhes do Serviço</h1>
-        </div>
-      </header>
+      <PageHeader title="Detalhes do Serviço" backHref="/" className="mb-0" />
 
       <main className="p-4 space-y-6 max-w-2xl mx-auto pb-24">
         {/* Tipo e Status */}

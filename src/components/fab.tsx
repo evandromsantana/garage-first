@@ -1,19 +1,16 @@
 "use client"
 
 import { Plus } from "lucide-react"
-import { Button } from "@/components/ui/button"
 import Link from "next/link"
 
 export function FAB() {
   return (
-    <Link href="/maintenance/new">
-      <Button
-        size="lg"
-        className="fixed bottom-20 right-6 h-16 w-16 rounded-none shadow-[2px_2px_0_0_var(--foreground)] transition-transform hover:scale-95 hover:-translate-y-1 z-50 bg-background hover:bg-foreground hover:text-background border-4 border-foreground text-foreground"
-      >
-        <Plus className="h-8 w-8 font-black" />
-        <span className="sr-only">Nova manutenção detalhada</span>
-      </Button>
+    <Link
+      href="/maintenance/new"
+      aria-label="Adicionar nova manutenção"
+      className="fixed bottom-20 right-4 z-50 h-16 w-16 bg-foreground text-background border-4 border-background shadow-[0_0_0_4px_var(--foreground)] rounded-none flex items-center justify-center hover:scale-95 transition-transform"
+    >
+      <Plus className="h-8 w-8" aria-hidden="true" />
     </Link>
   )
 }

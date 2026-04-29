@@ -1,4 +1,4 @@
-import { PredictiveRule, MaintenanceType } from "@/types"
+import { MaintenanceType } from "@/types"
 import { Bike, Search, Settings, Wrench, LucideIcon } from "lucide-react"
 
 // Navigation tabs for MobileNav
@@ -6,23 +6,16 @@ export interface NavTab {
   name: string
   href: string
   icon: LucideIcon
+  label: string
 }
 
 export const MOBILE_NAV_TABS: NavTab[] = [
-  { name: "Início", href: "/", icon: Bike },
-  { name: "Busca", href: "/search", icon: Search },
-  { name: "Peças", href: "/parts", icon: Wrench },
-  { name: "Ajustes", href: "/settings", icon: Settings },
+  { name: "Início", href: "/", icon: Bike, label: "Ir para página inicial" },
+  { name: "Busca", href: "/search", icon: Search, label: "Buscar informações técnicas" },
+  { name: "Peças", href: "/parts", icon: Wrench, label: "Ver inventário de peças" },
+  { name: "Ajustes", href: "/settings", icon: Settings, label: "Configurações do aplicativo" },
 ]
 
-// Predictive maintenance rules based on keywords and lifespan in KM
-export const PREDICTIVE_RULES: PredictiveRule[] = [
-  { keyword: "óleo", lifespan: 5000, name: "Troca de Óleo" },
-  { keyword: "oleo", lifespan: 5000, name: "Troca de Óleo" },
-  { keyword: "pastilha", lifespan: 10000, name: "Pastilhas de Freio" },
-  { keyword: "fluido", lifespan: 12000, name: "Fluido de Freio/Arrefecimento" },
-  { keyword: "vela", lifespan: 12000, name: "Velas de Ignição" }
-]
 
 // Alert threshold in KM (show alert when remaining KM is less than this)
 export const ALERT_THRESHOLD_KM = 500

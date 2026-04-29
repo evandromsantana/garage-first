@@ -2,7 +2,7 @@
 
 import { Card, CardContent } from "@/components/ui/card"
 import { AlertTriangle } from "lucide-react"
-import { PREDICTIVE_RULES, ALERT_THRESHOLD_KM } from "@/lib/constants"
+import { PREDICTIVE_RULES, ALERT_THRESHOLD_KM } from "@/lib/constants/maintenance"
 import { MaintenanceAlert } from "@/types"
 
 interface DashboardAlertsProps {

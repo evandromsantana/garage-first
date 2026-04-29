@@ -1,22 +1,27 @@
 "use client"
 
-import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { FAB } from "@/components/fab"
 import { GloveMode } from "@/components/glove-mode"
 import { ExpenseChart } from "@/components/expense-chart"
-import { Bike, Search, TrendingUp, Hand, BookOpen } from "lucide-react"
+import { DashboardHeader } from "@/components/dashboard/header"
 import Link from "next/link"
 import { createMaintenanceLog } from "@/app/actions"
 import { toast } from "sonner"
 import { DashboardAlerts } from "@/components/dashboard/alerts"
-import { DashboardStats } from "@/components/dashboard/stats"
+import { DashboardMetrics } from "@/components/dashboard/metrics"
 import { PendingTasks } from "@/components/dashboard/pending-tasks"
 import { RecentHistory } from "@/components/dashboard/recent-history"
+import { AgentsPanel } from "@/components/dashboard/agents-panel"
+import { LazyExpenseChartWrapper, LazyAchievementsWrapper, LazyMaintenanceForecastWrapper, LazyCostAnalysisWrapper, LazySmartAlertsWrapper } from "@/components/dashboard/lazy-components"
+import { HealthScore } from "@/components/dashboard"
+import { useMemoizedMetrics } from "@/hooks/use-memoized-data"
+import { Achievements } from "@/components/achievements"
 import { VehicleSummary, PendingTask } from "@/types"
-import { MAINTENANCE_TYPE_MAP } from "@/lib/constants"
-import { calculateVehicleMetrics } from "@/lib/utils"
+import { MAINTENANCE_TYPE_MAP } from "@/lib/constants/maintenance"
+import { usePredictiveMaintenance, useSmartAlerts, useVehicleMetrics } from "@/hooks"
 
 interface DashboardClientProps {
   vehicle: VehicleSummary
@@ -26,7 +31,23 @@ interface DashboardClientProps {
 export function DashboardClient({ vehicle, pending }: DashboardClientProps) {
   const [gloveMode, setGloveMode] = useState(false)
 
-  const { totalSpent } = calculateVehicleMetrics(vehicle.maintenanceLogs, vehicle.currentKm)
+  // Memoized metrics for performance
+  const memoizedMetrics = useMemoizedMetrics(vehicle)
+  
+  // Advanced hooks for predictive analytics
+  const vehicleMetrics = useVehicleMetrics(vehicle)
+  const predictiveData = usePredictiveMaintenance(vehicle)
+  const smartAlerts = useSmartAlerts(vehicle)
+
+  // Generate alerts from insights when component mounts
+  useEffect(() => {
+    const alerts = smartAlerts.generateAlertsFromInsights(
+      predictiveData.insights,
+      vehicle.currentKm
+    )
+    alerts.forEach(alert => smartAlerts.addAlert(alert))
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [predictiveData.insights, vehicle.currentKm]) // Intentionally exclude smartAlerts to prevent loop
 
   const handleQuickLog = async (actionName: string) => {
     try {
@@ -42,6 +63,7 @@ export function DashboardClient({ vehicle, pending }: DashboardClientProps) {
     }
   }
 
+
   if (gloveMode) {
     return (
       <GloveMode 
@@ -54,57 +76,75 @@ export function DashboardClient({ vehicle, pending }: DashboardClientProps) {
 
   return (
     <div className="min-h-screen bg-background pb-24 selection:bg-foreground/10 font-mono">
-      <header className="sticky top-0 z-10 border-b-4 border-foreground bg-background px-4 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Bike className="h-8 w-8 text-foreground" />
-            <h1 className="text-xl font-black uppercase tracking-tighter">Garage-First</h1>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="h-10 px-3 border-foreground text-foreground hover:bg-foreground hover:text-background rounded-none transition-none shadow-none"
-              onClick={() => setGloveMode(true)}
-            >
-              <Hand className="h-4 w-4 mr-1" />
-              <span className="hidden sm:inline">Oficina</span>
-              <span className="sm:hidden">Ofic.</span>
-            </Button>
-            <Link href="/technical">
-              <Button variant="ghost" size="icon" className="h-10 w-10 border-2 border-transparent hover:border-foreground hover:bg-foreground hover:text-background rounded-none transition-none">
-                <BookOpen className="h-5 w-5" />
-              </Button>
-            </Link>
-            <Link href="/search">
-              <Button variant="ghost" size="icon" className="h-10 w-10 border-2 border-transparent hover:border-foreground hover:bg-foreground hover:text-background rounded-none transition-none">
-                <Search className="h-5 w-5" />
-              </Button>
-            </Link>
-          </div>
-        </div>
-        <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mt-2">
-          [ Kawasaki Ninja 400 • 2020 ]
-        </p>
-      </header>
+      <DashboardHeader vehicle={vehicle} />
 
       <main className="p-4 space-y-5">
+        {/* Smart Alerts - Top Priority */}
+        <LazySmartAlertsWrapper
+          alerts={smartAlerts.alerts}
+          unreadCount={smartAlerts.unreadCount}
+          criticalCount={smartAlerts.criticalCount}
+          onMarkAsRead={smartAlerts.markAsRead}
+          onMarkAllAsRead={smartAlerts.markAllAsRead}
+          onClearAlerts={smartAlerts.clearAlerts}
+        />
+
+        {/* Key Metrics Row */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          <HealthScore healthScore={predictiveData.healthScore} />
+          <DashboardMetrics vehicle={vehicle} />
+        </div>
+
+        {/* Predictive Analytics Row */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          <LazyMaintenanceForecastWrapper 
+            insights={predictiveData.insights}
+            nextMaintenanceDate={predictiveData.nextMaintenanceDate}
+          />
+          <LazyCostAnalysisWrapper 
+            usagePattern={predictiveData.usagePattern}
+            projectedCosts={predictiveData.projectedCosts}
+          />
+        </div>
+
+        {/* AI Agents Panel */}
+        <AgentsPanel />
+
+        {/* Traditional Components */}
         <DashboardAlerts vehicle={vehicle} />
-        <DashboardStats currentKm={vehicle.currentKm} totalSpent={totalSpent} />
         <PendingTasks pending={pending} />
         <RecentHistory logs={vehicle.maintenanceLogs} />
 
-        <Card className="bg-card border-4 border-foreground rounded-none shadow-none">
-          <CardHeader className="pb-3 border-b-2 border-foreground">
-            <CardTitle className="text-sm font-black uppercase flex items-center gap-2">
-              <TrendingUp className="h-5 w-5" />
-              Análise Financeira
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ExpenseChart maintenanceLogs={vehicle.maintenanceLogs} />
-          </CardContent>
-        </Card>
+        {/* Financial Analysis */}
+        <LazyExpenseChartWrapper logs={vehicle.maintenanceLogs} />
+
+        {/* Gamification - Achievements */}
+        <LazyAchievementsWrapper 
+          maintenanceLogs={vehicle.maintenanceLogs}
+          totalSpent={memoizedMetrics.totalSpent}
+          currentKm={vehicle.currentKm}
+        />
+
+        {/* Recommendations */}
+        {predictiveData.recommendations.length > 0 && (
+          <Card className="bg-muted border-4 border-dashed border-foreground rounded-none shadow-none">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-black uppercase">
+                Recomendações Inteligentes
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-2">
+                {predictiveData.recommendations.map((rec, index) => (
+                  <li key={index} className="flex items-start gap-2 text-sm">
+                    <span className="text-foreground font-bold">•</span>
+                    <span>{rec}</span>
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+        )}
       </main>
 
       <FAB />

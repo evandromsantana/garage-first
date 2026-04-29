@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import {
   getVehicleWithData,
   updateMaintenanceStatus,
@@ -18,60 +19,76 @@ interface UseMaintenanceReturn {
   handleDelete: () => Promise<void>
 }
 
+// Hook para buscar dados do veículo com maintenance logs
+export function useVehicleMaintenance(vehicleId: string) {
+  return useQuery({
+    queryKey: ['vehicle', vehicleId, 'maintenance'],
+    queryFn: () => getVehicleWithData(vehicleId),
+    enabled: !!vehicleId,
+    staleTime: 2 * 60 * 1000, // 2 minutos para dados dinâmicos
+  })
+}
+
+// Hook para buscar primeira maintenance por ID
 export function useMaintenance(id: string): UseMaintenanceReturn {
   const router = useRouter()
-  const [maintenance, setMaintenance] = useState<MaintenanceLog | null>(null)
-  const [loading, setLoading] = useState(true)
+  const queryClient = useQueryClient()
 
-  useEffect(() => {
-    async function loadData() {
-      try {
-        const baseVehicle = await getFirstVehicle()
-        if (baseVehicle) {
-          const vehicle = await getVehicleWithData(baseVehicle.id)
-          if (vehicle?.maintenanceLogs) {
-            const found = vehicle.maintenanceLogs.find((m) => m.id === id)
-            if (found) {
-              setMaintenance(found)
-            }
-          }
-        }
-      } catch {
-        toast.error("Erro ao carregar dados")
-      } finally {
-        setLoading(false)
-      }
-    }
-    loadData()
-  }, [id])
+  // Buscar primeiro veículo
+  const { data: firstVehicle, isLoading: vehicleLoading } = useQuery({
+    queryKey: ['first-vehicle'],
+    queryFn: getFirstVehicle,
+    staleTime: 5 * 60 * 1000, // 5 minutos
+  })
+
+  // Buscar dados completos do veículo
+  const { data: vehicle, isLoading: dataLoading } = useVehicleMaintenance(
+    firstVehicle?.id || ''
+  )
+
+  // Encontrar maintenance específica
+  const maintenance = vehicle?.maintenanceLogs?.find((m) => m.id === id) || null
+  const loading = vehicleLoading || dataLoading
+
+  // Mutation para atualizar status
+  const updateStatusMutation = useMutation({
+    mutationFn: (newStatus: "COMPLETED" | "PENDING") => 
+      updateMaintenanceStatus(id, newStatus),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['vehicle', firstVehicle?.id, 'maintenance'] })
+      toast.success("Status atualizado com sucesso")
+    },
+    onError: () => {
+      toast.error("Erro ao atualizar status")
+    },
+  })
+
+  // Mutation para deletar
+  const deleteMutation = useMutation({
+    mutationFn: () => deleteMaintenanceLog(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['vehicle', firstVehicle?.id, 'maintenance'] })
+      toast.success("Registro excluído")
+      router.push("/")
+    },
+    onError: () => {
+      toast.error("Erro ao excluir")
+    },
+  })
 
   const handleStatusChange = useCallback(
     async (newStatus: "COMPLETED" | "PENDING") => {
       if (!maintenance) return
-      try {
-        await updateMaintenanceStatus(maintenance.id, newStatus)
-        setMaintenance({ ...maintenance, status: newStatus })
-        toast.success(
-          `Status atualizado para ${newStatus === "COMPLETED" ? "Concluído" : "Pendente"}`
-        )
-      } catch {
-        toast.error("Erro ao atualizar status")
-      }
+      updateStatusMutation.mutate(newStatus)
     },
-    [maintenance]
+    [maintenance, updateStatusMutation]
   )
 
   const handleDelete = useCallback(async () => {
     if (!maintenance || !confirm("Tem certeza que deseja excluir este registro?"))
       return
-    try {
-      await deleteMaintenanceLog(maintenance.id)
-      toast.success("Registro excluído")
-      router.push("/")
-    } catch {
-      toast.error("Erro ao excluir")
-    }
-  }, [maintenance, router])
+    deleteMutation.mutate()
+  }, [maintenance, deleteMutation])
 
   return {
     maintenance,

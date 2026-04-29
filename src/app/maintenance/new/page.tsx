@@ -1,4 +1,4 @@
-import { loadOrCreateVehicle } from "@/hooks/use-vehicle-loader"
+import { loadOrCreateVehicle } from "@/app/actions/vehicle"
 import NewMaintenanceForm from "@/components/new-maintenance-form"
 import { ErrorMessage } from "@/components/ui/error-message"
 

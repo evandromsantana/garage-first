@@ -4,12 +4,30 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ArrowLeft, Settings, Save, AlertTriangle, FileText } from "lucide-react"
-import { updateVehicleKm } from "@/app/actions"
+import { PageHeader } from "@/components/page-header"
+import { updateVehicleKm, getVehicleWithData } from "@/app/actions"
 import { revalidatePath } from "next/cache"
-import { loadOrCreateVehicle } from "@/hooks/use-vehicle-loader"
+import { loadOrCreateVehicle } from "@/app/actions/vehicle"
+import { ExportData } from "@/components/export-data"
+import { cookies } from "next/headers"
+import { verifyToken } from "@/lib/auth"
+import { redirect } from "next/navigation"
 
 export default async function SettingsPage() {
-  const vehicle = await loadOrCreateVehicle()
+  // Verificar autenticação
+  const cookieStore = await cookies()
+  const authToken = cookieStore.get('auth-token')?.value
+  
+  if (!authToken) {
+    redirect('/auth/login')
+  }
+  
+  const user = verifyToken(authToken)
+  if (!user) {
+    redirect('/auth/login')
+  }
+  const vehicleBase = await loadOrCreateVehicle()
+  const vehicle = await getVehicleWithData(vehicleBase.id)
 
   const saveSettings = async (formData: FormData) => {
     "use server"
@@ -22,19 +40,7 @@ export default async function SettingsPage() {
 
   return (
     <div className="min-h-screen bg-background font-mono">
-      <header className="sticky top-0 z-10 border-b-4 border-foreground bg-background px-4 py-4 mb-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link href="/" className="p-2 border-4 border-foreground text-foreground hover:bg-foreground hover:text-background rounded-none transition-none shadow-[2px_2px_0_0_colord(var(--foreground))] active:translate-y-1 active:shadow-none">
-              <ArrowLeft className="h-6 w-6 font-black" />
-            </Link>
-            <div className="flex items-center gap-2">
-              <Settings className="h-6 w-6" />
-              <h1 className="text-2xl font-black uppercase tracking-tighter">Ajustes</h1>
-            </div>
-          </div>
-        </div>
-      </header>
+      <PageHeader title="Ajustes" icon={<Settings className="h-6 w-6" />} backHref="/" />
 
       <main className="p-4 space-y-6 pb-24">
         <Card className="bg-card border-4 border-foreground rounded-none shadow-[4px_4px_0_0_colord(var(--foreground))]">
@@ -59,7 +65,7 @@ export default async function SettingsPage() {
                 </div>
                 <div className="space-y-2">
                   <Label className="font-bold uppercase tracking-wider text-xs">Odômetro Mestre (KM)</Label>
-                  <Input name="km" defaultValue={vehicle?.currentKm} type="number" className="border-4 border-foreground rounded-none h-14 font-black text-xl px-4 focus-visible:ring-0 shadow-[inset_4px_4px_0_0_var(--background)]" />
+                  <Input name="km" defaultValue={vehicle?.currentKm || 0} type="number" className="border-4 border-foreground rounded-none h-14 font-black text-xl px-4 focus-visible:ring-0 shadow-[inset_4px_4px_0_0_var(--background)]" />
                 </div>
               </div>
 
@@ -91,6 +97,20 @@ export default async function SettingsPage() {
             VISUALIZAR PASSAPORTE
           </Button>
         </Link>
+
+        {vehicle && (
+          <Card className="bg-card border-4 border-foreground rounded-none shadow-[4px_4px_0_0_colord(var(--foreground))]">
+            <CardHeader className="border-b-4 border-foreground pb-4 bg-muted">
+              <CardTitle className="font-black uppercase text-lg">Exportar Dados</CardTitle>
+            </CardHeader>
+            <CardContent className="p-4">
+              <ExportData
+                vehicle={vehicle}
+                maintenanceLogs={vehicle.maintenanceLogs}
+              />
+            </CardContent>
+          </Card>
+        )}
 
       </main>
     </div>

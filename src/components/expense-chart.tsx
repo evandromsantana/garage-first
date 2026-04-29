@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useEffect, useMemo, useCallback } from "react"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { MaintenanceLogSummary } from "@/types"
@@ -27,6 +28,8 @@ type MonthlyData = { month: string; total: number }
 type TypeData = { name: string; value: number; type: string }
 
 function calculateMonthlyData(logs: MaintenanceLogSummary[]): MonthlyData[] {
+  if (!logs || logs.length === 0) return []
+  
   return logs.reduce<MonthlyData[]>((acc, log) => {
     const month = new Date(log.createdAt).toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' })
     const total = calculateTotalSpent([log])
@@ -42,6 +45,8 @@ function calculateMonthlyData(logs: MaintenanceLogSummary[]): MonthlyData[] {
 }
 
 function calculateTypeData(logs: MaintenanceLogSummary[]): TypeData[] {
+  if (!logs || logs.length === 0) return []
+  
   const typeData: TypeData[] = [
     { name: MAINTENANCE_TYPE_LABELS.PREVENTIVE, value: 0, type: 'PREVENTIVE' },
     { name: MAINTENANCE_TYPE_LABELS.CORRECTIVE, value: 0, type: 'CORRECTIVE' },
@@ -58,10 +63,21 @@ function calculateTypeData(logs: MaintenanceLogSummary[]): TypeData[] {
 }
 
 export function ExpenseChart({ maintenanceLogs }: ExpenseChartProps) {
-  const monthlyData = calculateMonthlyData(maintenanceLogs)
-  const pieData = calculateTypeData(maintenanceLogs)
+  const [mounted, setMounted] = useState(false)
+  
+  // Memoize data calculations to prevent re-renders
+  const monthlyData = useMemo(() => calculateMonthlyData(maintenanceLogs), [maintenanceLogs])
+  const pieData = useMemo(() => calculateTypeData(maintenanceLogs), [maintenanceLogs])
+  
+  // Memoize formatter to prevent re-renders
+  const tickFormatter = useCallback((v: number) => `R$${v}`, [])
 
-  if (maintenanceLogs.length === 0) {
+  useEffect(() => {
+    const raf = requestAnimationFrame(() => setMounted(true))
+    return () => cancelAnimationFrame(raf)
+  }, [])
+
+  if (!maintenanceLogs || maintenanceLogs.length === 0) {
     return (
       <Card className="rounded-none border-4 border-foreground shadow-[2px_2px_0_0_var(--foreground)]">
         <CardContent className="p-8 text-center text-muted-foreground font-bold uppercase tracking-widest">
@@ -78,12 +94,13 @@ export function ExpenseChart({ maintenanceLogs }: ExpenseChartProps) {
           <CardTitle className="text-sm font-black uppercase tracking-widest">Evolução de Gastos</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-48">
+          <div className="h-48 min-h-[192px] w-full">
+            {mounted ? (
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={monthlyData}>
                 <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
                 <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-                <YAxis tick={{ fontSize: 12 }} tickFormatter={(v) => `R$${v}`} />
+                <YAxis tick={{ fontSize: 12 }} tickFormatter={tickFormatter} />
                 <Tooltip
                   formatter={formatTooltipValue}
                   contentStyle={{ backgroundColor: 'var(--background)', border: '2px solid var(--foreground)', borderRadius: '0px', color: 'var(--foreground)', boxShadow: 'none' }}
@@ -93,6 +110,9 @@ export function ExpenseChart({ maintenanceLogs }: ExpenseChartProps) {
                 <Bar dataKey="total" fill="var(--foreground)" radius={[0, 0, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
+            ) : (
+              <div className="h-full w-full bg-muted animate-pulse" />
+            )}
           </div>
         </CardContent>
       </Card>
@@ -103,7 +123,8 @@ export function ExpenseChart({ maintenanceLogs }: ExpenseChartProps) {
             <CardTitle className="text-sm font-black uppercase tracking-widest">Distribuição</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-48">
+            <div className="h-48 min-h-[192px] w-full">
+              {mounted ? (
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -115,7 +136,7 @@ export function ExpenseChart({ maintenanceLogs }: ExpenseChartProps) {
                     paddingAngle={5}
                     dataKey="value"
                   >
-                    {pieData.map((entry, index) => (
+                    {pieData.map((entry: TypeData, index: number) => (
                       <Cell key={`cell-${index}`} fill={COLORS[entry.type as keyof typeof COLORS]} />
                     ))}
                   </Pie>
@@ -126,9 +147,12 @@ export function ExpenseChart({ maintenanceLogs }: ExpenseChartProps) {
                   />
                 </PieChart>
               </ResponsiveContainer>
+              ) : (
+                <div className="h-full w-full bg-muted animate-pulse" />
+              )}
             </div>
             <div className="flex justify-center gap-4 mt-2">
-              {pieData.map((item) => (
+              {pieData.map((item: TypeData) => (
                 <div key={item.type} className="flex items-center gap-2 border-2 border-foreground px-2 py-1 bg-background">
                   <div 
                     className="w-3 h-3 border-2 border-foreground" 

@@ -1,21 +1,21 @@
-import { getVehicleWithData, getPendingMaintenance } from "@/app/actions"
-import { DashboardClient } from "@/components/dashboard-client"
-import { loadOrCreateVehicle } from "@/hooks/use-vehicle-loader"
+import { cookies } from "next/headers"
+import { redirect } from "next/navigation"
+import { verifyToken } from "@/lib/auth"
 
 export default async function Home() {
-  const vehicleBase = await loadOrCreateVehicle()
-
-  const vehicle = await getVehicleWithData(vehicleBase.id)
-
-  if (!vehicle) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <p>Erro ao carregar veículo</p>
-      </div>
-    )
+  // Verificar autenticação
+  const cookieStore = await cookies()
+  const authToken = cookieStore.get('auth-token')?.value
+  
+  if (!authToken) {
+    redirect('/auth/login')
+  }
+  
+  const user = verifyToken(authToken)
+  if (!user) {
+    redirect('/auth/login')
   }
 
-  const pending = await getPendingMaintenance(vehicle.id)
-
-  return <DashboardClient vehicle={vehicle} pending={pending} />
+  // Usuário autenticado, redirecionar para dashboard
+  redirect('/dashboard')
 }

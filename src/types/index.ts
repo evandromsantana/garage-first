@@ -49,6 +49,7 @@ export interface CreateExpenseInput {
 }
 
 export interface PartInput {
+  id: string
   name: string
   cost: number
   isOriginal: boolean
@@ -93,6 +94,49 @@ export interface PredictiveRule {
   keyword: string
   lifespan: number
   name: string
+  criticality: "low" | "medium" | "high" | "critical"
+  category: "engine" | "brakes" | "tires" | "electronics" | "general"
+}
+
+export interface PredictiveInsight {
+  name: string
+  dueDate: Date | null
+  dueKm: number | null
+  criticality: "low" | "medium" | "high" | "critical"
+  estimatedCost?: number
+  recommendations: string[]
+  urgencyScore: number // 0-100
+}
+
+export interface UsagePattern {
+  averageKmPerMonth: number
+  seasonalVariation: number
+  mostFrequentType: MaintenanceType
+  costTrend: "increasing" | "decreasing" | "stable"
+  peakUsageMonth: number | null
+}
+
+export interface SmartAlert {
+  id: string
+  type: "maintenance_due" | "cost_spike" | "part_wear" | "seasonal" | "performance"
+  severity: "info" | "warning" | "error" | "critical"
+  title: string
+  message: string
+  actionItems: string[]
+  estimatedCost?: number | undefined
+  dueDate?: Date | undefined
+  createdAt: Date
+  isRead: boolean
+}
+
+export interface VehicleHealthScore {
+  overall: number // 0-100
+  engine: number
+  brakes: number
+  tires: number
+  electronics: number
+  lastUpdated: Date
+  trend: "improving" | "declining" | "stable"
 }
 
 export interface MaintenanceAlert {
