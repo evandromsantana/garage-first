@@ -100,6 +100,8 @@ function AgentCard({ agent }: { agent: any }) {
       case 'security': return <Shield className="h-6 w-6" />
       case 'testing': return <TestTube className="h-6 w-6" />
       case 'documentation': return <FileText className="h-6 w-6" />
+      case 'predictive': return <Bot className="h-6 w-6" />
+      case 'financial': return <RefreshCw className="h-6 w-6" />
       default: return <Bot className="h-6 w-6" />
     }
   }

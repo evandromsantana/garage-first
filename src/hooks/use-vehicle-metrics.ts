@@ -1,7 +1,7 @@
 "use client"
 
-import { useMemo, useEffect, useState } from "react"
-import { VehicleSummary, MaintenanceLog, ProjectExpense } from "@/types"
+import { ProjectExpense, VehicleSummary } from "@/types"
+import { useEffect, useMemo, useState } from "react"
 
 interface VehicleMetrics {
   totalSpent: number

@@ -74,8 +74,10 @@ export default function SearchPage() {
                       <p className="font-bold text-lg uppercase">{spec.component}</p>
                       <p className="text-xs font-bold tracking-widest uppercase opacity-70">[{spec.category}]</p>
                     </div>
-                    {spec.torqueNm && (
-                      <Badge variant="outline" className="border-2 border-current rounded-none font-bold text-base h-8">{spec.torqueNm} Nm</Badge>
+                    {spec.value && (
+                      <Badge variant="outline" className="border-2 border-current rounded-none font-bold text-base h-8">
+                        {spec.value} {spec.category.toLowerCase().includes('torque') ? 'Nm' : ''}
+                      </Badge>
                     )}
                   </div>
                 </CommandItem>
@@ -98,12 +100,16 @@ export default function SearchPage() {
               </Button>
             </CardHeader>
             <CardContent className="p-6 space-y-8">
-              {selected.torqueNm && (
+              {selected.value && (
                 <div className="space-y-2">
-                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest border-b-2 border-dashed border-foreground/30 pb-1 inline-block">[ TORQUE APERTO ]</p>
+                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest border-b-2 border-dashed border-foreground/30 pb-1 inline-block">
+                    [ {selected.category.toUpperCase()} ]
+                  </p>
                   <div className="flex items-end gap-2">
-                    <p className="text-5xl font-black">{selected.torqueNm}</p>
-                    <p className="text-xl font-black mb-1">Nm</p>
+                    <p className="text-5xl font-black">{selected.value}</p>
+                    {selected.category.toLowerCase().includes('torque') && (
+                      <p className="text-xl font-black mb-1">Nm</p>
+                    )}
                   </div>
                 </div>
               )}

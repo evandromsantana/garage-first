@@ -1,20 +1,18 @@
 "use client"
 
-import { useForm, useFieldArray } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { toast } from "sonner"
+import { getFirstVehicle, submitFullMaintenance } from "@/app/actions"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Loader2, Plus, Trash2 } from "lucide-react"
 import { MaintenanceFormData, maintenanceFormResolver } from "@/lib/form-resolvers"
-import { createMaintenance } from "@/app/actions"
-import { getFirstVehicle } from "@/app/actions"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { Loader2, Plus, Trash2 } from "lucide-react"
+import { useFieldArray, useForm } from "react-hook-form"
+import { toast } from "sonner"
 
 interface MaintenanceFormProps {
   onSuccess?: () => void
@@ -34,7 +32,7 @@ export function MaintenanceForm({ onSuccess, onCancel, initialData }: Maintenanc
     setValue,
     watch,
   } = useForm<MaintenanceFormData>({
-    resolver: zodResolver(maintenanceFormResolver),
+    resolver: maintenanceFormResolver,
     defaultValues: {
       type: "PREVENTIVE",
       description: "",
@@ -57,7 +55,11 @@ export function MaintenanceForm({ onSuccess, onCancel, initialData }: Maintenanc
       if (!vehicle) {
         throw new Error("Nenhum veículo encontrado")
       }
-      return createMaintenance(vehicle.id, data)
+      return submitFullMaintenance({
+        vehicleId: vehicle.id,
+        ...data,
+        parts: data.parts || []
+      })
     },
     onSuccess: () => {
       toast.success("Manutenção registrada com sucesso!")

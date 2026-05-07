@@ -15,7 +15,7 @@ function formatTooltipValue(value: unknown): [string, string] | string {
 }
 
 interface ExpenseChartProps {
-  maintenanceLogs: MaintenanceLogSummary[]
+  maintenanceLogs?: MaintenanceLogSummary[]
 }
 
 const COLORS = {
@@ -66,8 +66,8 @@ export function ExpenseChart({ maintenanceLogs }: ExpenseChartProps) {
   const [mounted, setMounted] = useState(false)
   
   // Memoize data calculations to prevent re-renders
-  const monthlyData = useMemo(() => calculateMonthlyData(maintenanceLogs), [maintenanceLogs])
-  const pieData = useMemo(() => calculateTypeData(maintenanceLogs), [maintenanceLogs])
+  const monthlyData = useMemo(() => calculateMonthlyData(maintenanceLogs ?? []), [maintenanceLogs])
+  const pieData = useMemo(() => calculateTypeData(maintenanceLogs ?? []), [maintenanceLogs])
   
   // Memoize formatter to prevent re-renders
   const tickFormatter = useCallback((v: number) => `R$${v}`, [])
@@ -107,7 +107,13 @@ export function ExpenseChart({ maintenanceLogs }: ExpenseChartProps) {
                   itemStyle={{ color: 'var(--foreground)' }}
                   cursor={{fill: 'currentColor', opacity: 0.1}}
                 />
-                <Bar dataKey="total" fill="var(--foreground)" radius={[0, 0, 0, 0]} />
+                <Bar 
+                  dataKey="total" 
+                  fill="var(--foreground)" 
+                  radius={[0, 0, 0, 0]} 
+                  stroke="var(--foreground)"
+                  strokeWidth={1}
+                />
               </BarChart>
             </ResponsiveContainer>
             ) : (
@@ -133,8 +139,10 @@ export function ExpenseChart({ maintenanceLogs }: ExpenseChartProps) {
                     cy="50%"
                     innerRadius={40}
                     outerRadius={70}
-                    paddingAngle={5}
+                    paddingAngle={2}
                     dataKey="value"
+                    stroke="var(--foreground)"
+                    strokeWidth={2}
                   >
                     {pieData.map((entry: TypeData, index: number) => (
                       <Cell key={`cell-${index}`} fill={COLORS[entry.type as keyof typeof COLORS]} />

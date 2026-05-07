@@ -1,97 +1,69 @@
 "use client"
 
-import { VehicleHealthScore } from "@/types"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { TrendingUp, TrendingDown, Minus, Heart } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { ShieldAlert, Activity, Droplets, Zap } from "lucide-react"
 
-interface HealthScoreProps {
-  healthScore: VehicleHealthScore
+interface SystemHealth {
+  name: string;
+  status: number; // 0 to 100
+  pos: { x: string; y: string };
+  icon: React.ReactNode;
 }
 
-export function HealthScore({ healthScore }: HealthScoreProps) {
-  const getScoreColor = (score: number) => {
-    if (score >= 80) return "text-green-600"
-    if (score >= 60) return "text-yellow-600"
-    if (score >= 40) return "text-orange-600"
-    return "text-red-600"
-  }
-
-  const getScoreBg = (score: number) => {
-    if (score >= 80) return "bg-green-100 border-green-600"
-    if (score >= 60) return "bg-yellow-100 border-yellow-600"
-    if (score >= 40) return "bg-orange-100 border-orange-600"
-    return "bg-red-100 border-red-600"
-  }
-
-  const getTrendIcon = (trend: string) => {
-    switch (trend) {
-      case "improving":
-        return <TrendingUp className="h-4 w-4 text-green-600" />
-      case "declining":
-        return <TrendingDown className="h-4 w-4 text-red-600" />
-      default:
-        return <Minus className="h-4 w-4 text-gray-600" />
-    }
-  }
-
-  const categories = [
-    { name: "Motor", score: healthScore.engine, key: "engine" },
-    { name: "Freios", score: healthScore.brakes, key: "brakes" },
-    { name: "Pneus", score: healthScore.tires, key: "tires" },
-    { name: "Eletrônica", score: healthScore.electronics, key: "electronics" },
+export function HealthScore() {
+  const systems: SystemHealth[] = [
+    { name: "Motor", status: 92, pos: { x: "45%", y: "55%" }, icon: <Activity className="h-4 w-4" /> },
+    { name: "Transmissão", status: 75, pos: { x: "65%", y: "65%" }, icon: <Zap className="h-4 w-4" /> },
+    { name: "Fluidos", status: 88, pos: { x: "40%", y: "45%" }, icon: <Droplets className="h-4 w-4" /> },
+    { name: "Freios", status: 60, pos: { x: "20%", y: "70%" }, icon: <ShieldAlert className="h-4 w-4" /> },
   ]
 
   return (
-    <Card className="border-4 border-foreground rounded-none shadow-[4px_4px_0_0_var(--foreground)]">
-      <CardHeader className="pb-3 border-b-4 border-foreground">
-        <CardTitle className="flex items-center gap-2 text-lg font-black uppercase">
-          <Heart className="h-5 w-5" />
-          Score de Saúde
-          {getTrendIcon(healthScore.trend)}
+    <Card className="bg-zinc-950 border-4 border-foreground rounded-none shadow-[4px_4px_0_0_var(--foreground)] overflow-hidden">
+      <CardHeader className="border-b-4 border-foreground bg-zinc-900 pb-4">
+        <CardTitle className="font-black uppercase text-white flex items-center gap-2 italic">
+          <Activity className="h-6 w-6 text-green-500" />
+          Status Tático de Sistemas
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-4">
-        {/* Overall Score */}
-        <div className="text-center mb-6">
-          <div className={cn(
-            "inline-flex items-center justify-center w-24 h-24 rounded-full border-4 text-3xl font-black",
-            getScoreBg(healthScore.overall),
-            getScoreColor(healthScore.overall)
-          )}>
-            {Math.round(healthScore.overall)}
-          </div>
-          <p className="text-xs font-bold uppercase mt-2 text-muted-foreground">
-            Score Geral
-          </p>
-        </div>
+      <CardContent className="p-0 relative h-64 sm:h-80 bg-[url('/images/ninja-blueprint.png')] bg-contain bg-center bg-no-repeat">
+        {/* Overlay Darkener */}
+        <div className="absolute inset-0 bg-black/40" />
+        
+        {/* Radar Scanning Effect */}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-green-500/10 to-transparent h-1/2 w-full animate-pulse top-0" />
 
-        {/* Category Scores */}
-        <div className="grid grid-cols-2 gap-3">
-          {categories.map((category) => (
-            <div
-              key={category.key}
-              className={cn(
-                "border-2 rounded p-3 text-center",
-                getScoreBg(category.score),
-                "border-opacity-50"
-              )}
-            >
-              <div className={cn("text-xl font-black", getScoreColor(category.score))}>
-                {Math.round(category.score)}
-              </div>
-              <p className="text-xs font-bold uppercase text-muted-foreground">
-                {category.name}
-              </p>
+        {systems.map((sys, idx) => (
+          <div 
+            key={idx} 
+            className="absolute transition-all hover:scale-110 cursor-help group"
+            style={{ left: sys.pos.x, top: sys.pos.y }}
+          >
+            {/* Connection Line */}
+            <div className="absolute w-8 h-[2px] bg-foreground/50 -left-8 top-1/2 hidden group-hover:block" />
+            
+            {/* Status Point */}
+            <div className={`h-4 w-4 rounded-full border-2 border-white animate-ping absolute ${sys.status > 80 ? 'bg-green-500' : sys.status > 60 ? 'bg-yellow-500' : 'bg-red-500'}`} />
+            <div className={`h-4 w-4 rounded-full border-2 border-white relative z-10 ${sys.status > 80 ? 'bg-green-500' : sys.status > 60 ? 'bg-yellow-500' : 'bg-red-500'}`} />
+            
+            {/* Tooltip */}
+            <div className="absolute left-6 -top-2 bg-foreground text-background p-2 border-2 border-background hidden group-hover:block z-20 min-w-[120px]">
+               <div className="flex items-center gap-2 mb-1">
+                 {sys.icon}
+                 <span className="text-[10px] font-black uppercase">{sys.name}</span>
+               </div>
+               <div className="h-2 w-full bg-background/20 overflow-hidden">
+                  <div className="h-full bg-background" style={{ width: `${sys.status}%` }} />
+               </div>
+               <div className="text-[14px] font-black mt-1">{sys.status}% HEALTH</div>
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
 
-        {/* Last Updated */}
-        <div className="mt-4 pt-3 border-t-2 border-muted text-center">
-          <p className="text-xs font-bold uppercase text-muted-foreground">
-            Atualizado: {healthScore.lastUpdated.toLocaleDateString("pt-BR")}
-          </p>
+        {/* Global Score Seal */}
+        <div className="absolute bottom-4 right-4 border-2 border-white p-2 bg-black/80">
+           <p className="text-[8px] font-black text-white uppercase leading-none mb-1">Score Geral</p>
+           <p className="text-2xl font-black text-green-500 italic leading-none">82.4</p>
         </div>
       </CardContent>
     </Card>

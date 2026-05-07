@@ -1,7 +1,6 @@
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Clock, Check, X } from "lucide-react"
 import { updateMaintenanceStatus } from "@/app/actions"
@@ -13,87 +12,64 @@ interface PendingTasksProps {
   pending: PendingTask[]
 }
 
-const TYPE_STYLES: Record<string, string> = {
-  PREVENTIVE: "border-foreground font-black uppercase tracking-widest",
-  CORRECTIVE: "border-foreground bg-foreground text-background font-black uppercase tracking-widest",
-  UPGRADE: "border-dashed border-foreground bg-muted font-black uppercase tracking-widest"
-}
-
 export function PendingTasks({ pending }: PendingTasksProps) {
   return (
-    <Card className="bg-card border-4 border-foreground rounded-none shadow-none">
-      <CardHeader className="pb-3 border-b-2 border-foreground">
-        <CardTitle className="text-sm font-black uppercase flex items-center gap-2">
-          <Clock className="h-5 w-5" />
-          Tarefas / Peças Pendentes
-          <Badge variant="outline" className="ml-auto rounded-none border-2 border-foreground font-black">
-            {pending.length}
-          </Badge>
+    <Card className="kindle-card">
+      <CardHeader className="pb-4 border-b-4 border-foreground">
+        <CardTitle className="text-xl font-black uppercase italic flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Clock className="h-5 w-5" />
+            Tarefas em Aberto
+          </div>
+          <span className="font-mono text-sm bg-foreground text-background px-2 py-0.5">{pending.length}</span>
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3 pt-4">
+      <CardContent className="p-0 divide-y-2 divide-foreground">
         {pending.length === 0 ? (
-          <p className="text-sm text-muted-foreground text-center py-4 font-bold uppercase">
-            Nenhuma tarefa pendente
-          </p>
+          <div className="p-10 text-center text-xs font-black uppercase opacity-20 italic">
+            Nenhum procedimento pendente catalogado.
+          </div>
         ) : (
-          pending.slice(0, 5).map((item) => (
+          pending.map((item) => (
             <div
               key={item.id}
-              className="flex items-center justify-between p-3 border-2 border-dashed border-foreground/30 rounded-none bg-background group"
+              className="p-5 flex items-center justify-between bg-background hover:bg-muted/10 transition-none"
             >
-              <div className="flex items-start gap-3">
-                <div className="mt-0.5">
-                  <Badge
-                    variant="outline"
-                    className={`text-[10px] rounded-none ${TYPE_STYLES[item.type] ?? TYPE_STYLES.PREVENTIVE}`}
-                  >
-                    {item.type === "PREVENTIVE" && "Preventiva"}
-                    {item.type === "CORRECTIVE" && "Corretiva"}
-                    {item.type === "UPGRADE" && "Upgrade"}
-                  </Badge>
-                </div>
-                <div>
-                  <p className="text-sm font-bold uppercase">{item.description}</p>
-                  <p className="text-xs font-bold text-muted-foreground uppercase opacity-80">
-                    KM {formatNumber(item.kmAtService)}
-                  </p>
+              <div className="space-y-1">
+                <p className="text-lg font-black uppercase italic leading-none">{item.description}</p>
+                <div className="flex gap-3 text-[9px] font-black uppercase tracking-widest opacity-40">
+                  <span>KM {formatNumber(item.kmAtService)}</span>
+                  <span>•</span>
+                  <span>{item.type}</span>
                 </div>
               </div>
               
-              <div className="flex gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+              <div className="flex gap-3">
                 <Button 
                   variant="outline" 
                   onClick={async () => {
                     await updateMaintenanceStatus(item.id, 'COMPLETED')
-                    toast.success("Tarefa concluída!")
+                    toast.success("Procedimento Concluído")
                   }} 
-                  className="h-8 w-8 px-0 rounded-none border-2 border-foreground bg-transparent hover:bg-foreground hover:text-background"
-                  title="Marcar como Completo"
+                  className="h-12 w-12 rounded-none border-4 border-foreground bg-background hover:bg-foreground hover:text-background transition-all shadow-[2px_2px_0_0_var(--foreground)] active:shadow-none active:translate-y-0.5"
                 >
-                  <Check className="h-4 w-4" />
+                  <Check className="h-6 w-6" />
                 </Button>
                 <Button 
                   variant="outline" 
                   onClick={async () => {
-                    if(confirm("Deseja cancelar esta tarefa?")) {
+                    if(confirm("Cancelar este registro técnico?")) {
                       await updateMaintenanceStatus(item.id, 'CANCELLED')
-                      toast("Tarefa cancelada.")
+                      toast("Registro Cancelado")
                     }
                   }} 
-                  className="h-8 w-8 px-0 rounded-none border-2 border-transparent text-muted-foreground hover:text-foreground hover:bg-background"
-                  title="Cancelar"
+                  className="h-12 w-12 rounded-none border-4 border-foreground/10 text-muted-foreground hover:border-foreground hover:text-foreground transition-none"
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-5 w-5" />
                 </Button>
               </div>
             </div>
           ))
-        )}
-        {pending.length > 5 && (
-          <Button variant="ghost" className="w-full text-sm font-bold uppercase">
-            Ver mais {pending.length - 5}
-          </Button>
         )}
       </CardContent>
     </Card>

@@ -2,10 +2,9 @@
 
 import { useEffect, useState, useCallback } from "react"
 
-const THEME_KEY = "theme"
-const DARK_CLASS = "dark"
+const THEME_KEY = "garage-ninja-theme"
 
-type Theme = "light" | "dark"
+export type Theme = "light" | "dark" | "system"
 
 interface UseThemeReturn {
   theme: Theme
@@ -14,53 +13,52 @@ interface UseThemeReturn {
   setTheme: (theme: Theme) => void
 }
 
-function applyTheme(theme: Theme): void {
-  if (typeof document === "undefined") return
-
-  const root = document.documentElement
-  if (theme === "dark") {
-    root.classList.add(DARK_CLASS)
-  } else {
-    root.classList.remove(DARK_CLASS)
-  }
-}
-
-function getInitialTheme(): Theme {
-  if (typeof window === "undefined") return "light"
-  return (localStorage.getItem(THEME_KEY) as Theme) || "light"
-}
-
 export function useTheme(): UseThemeReturn {
-  const [theme, setThemeState] = useState<Theme>(getInitialTheme)
-  const [mounted, setMounted] = useState(false)
+  const [theme, setThemeState] = useState<Theme>("system")
 
-  // Mark as mounted after initial render (client-side only)
   useEffect(() => {
-    setMounted(true)
+    const savedTheme = localStorage.getItem(THEME_KEY) as Theme
+    if (savedTheme) {
+      setThemeState(savedTheme)
+    }
   }, [])
-
-  // Apply theme when it changes
-  useEffect(() => {
-    applyTheme(theme)
-  }, [theme])
 
   const setTheme = useCallback((newTheme: Theme) => {
     setThemeState(newTheme)
-    applyTheme(newTheme)
     localStorage.setItem(THEME_KEY, newTheme)
+    
+    const root = window.document.documentElement
+    root.classList.remove("light", "dark")
+
+    if (newTheme === "system") {
+      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
+      root.classList.add(systemTheme)
+    } else {
+      root.classList.add(newTheme)
+    }
   }, [])
 
-  const toggle = useCallback(() => {
-    const nextTheme = theme === "light" ? "dark" : "light"
-    setTheme(nextTheme)
-  }, [theme, setTheme])
+  useEffect(() => {
+    const root = window.document.documentElement
+    root.classList.remove("light", "dark")
 
-  // Prevent hydration mismatch by returning light during SSR
-  const currentTheme = mounted ? theme : "light"
+    if (theme === "system") {
+      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
+      root.classList.add(systemTheme)
+    } else {
+      root.classList.add(theme)
+    }
+  }, [theme])
+
+  const isDark = theme === "dark" || (theme === "system" && typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches)
+
+  const toggle = useCallback(() => {
+    setTheme(isDark ? "light" : "dark")
+  }, [isDark, setTheme])
 
   return {
-    theme: currentTheme,
-    isDark: currentTheme === "dark",
+    theme,
+    isDark,
     toggle,
     setTheme,
   }

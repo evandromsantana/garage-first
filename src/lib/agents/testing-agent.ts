@@ -36,7 +36,7 @@ class TestingAgent {
   }
 
   // Gerar testes para componentes React
-  generateReactComponentTests(componentName: string, props: any): TestCase[] {
+  generateReactComponentTests(componentName: string, _props: Record<string, unknown>): TestCase[] {
     return [
       {
         name: `${componentName} renders correctly`,

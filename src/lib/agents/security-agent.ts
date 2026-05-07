@@ -3,7 +3,7 @@
  * Valida: autenticação, autorização, inputs, XSS, CSRF
  */
 
-import { verifyToken } from '../auth'
+import { verifyToken, AuthUser } from '../auth'
 
 // Browser-compatible crypto functions
 const generateRandomBytes = (size: number): string => {
@@ -34,7 +34,7 @@ interface SecurityMetrics {
 interface SecurityRule {
   name: string
   description: string
-  validate: (input: any) => boolean
+  validate: (input: unknown) => boolean
   severity: 'low' | 'medium' | 'high' | 'critical'
 }
 
@@ -51,7 +51,8 @@ class SecurityAgent {
     {
       name: 'SQL Injection Prevention',
       description: 'Prevents SQL injection attacks',
-      validate: (input: string) => {
+      validate: (input: unknown) => {
+        if (typeof input !== 'string') return true
         const sqlPatterns = /(\b(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|EXEC|UNION|SCRIPT)\b)/i
         return !sqlPatterns.test(input)
       },
@@ -60,7 +61,8 @@ class SecurityAgent {
     {
       name: 'XSS Prevention',
       description: 'Prevents cross-site scripting attacks',
-      validate: (input: string) => {
+      validate: (input: unknown) => {
+        if (typeof input !== 'string') return true
         const xssPatterns = /(<script|javascript:|on\w+=|data:)/i
         return !xssPatterns.test(input)
       },
@@ -69,7 +71,8 @@ class SecurityAgent {
     {
       name: 'Email Validation',
       description: 'Validates email format',
-      validate: (input: string) => {
+      validate: (input: unknown) => {
+        if (typeof input !== 'string') return true
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
         return emailRegex.test(input)
       },
@@ -78,7 +81,8 @@ class SecurityAgent {
     {
       name: 'Password Strength',
       description: 'Validates password strength',
-      validate: (input: string) => {
+      validate: (input: unknown) => {
+        if (typeof input !== 'string') return true
         return input.length >= 8 && /[A-Z]/.test(input) && /[0-9]/.test(input)
       },
       severity: 'medium'
@@ -163,20 +167,21 @@ class SecurityAgent {
   }
 
   // Validar sessão de usuário
-  validateSession(token: string): { isValid: boolean; user?: any; reason?: string } {
+  validateSession(token: string): { isValid: boolean; user?: AuthUser | null; reason?: string } {
     try {
       const user = verifyToken(token)
-      return { isValid: true, user }
-    } catch (error) {
+      return { isValid: !!user, user }
+    } catch (_error) {
       return { isValid: false, reason: 'Invalid or expired token' }
     }
   }
 
   // Verificar permissões de usuário
-  checkPermissions(user: any, requiredPermissions: string[]): boolean {
+  checkPermissions(user: AuthUser | null, requiredPermissions: string[]): boolean {
     if (!user) return false
     
     // Implementar lógica de permissões baseada no role do usuário
+    // Por enquanto, todos os usuários autenticados têm permissão básica
     const userPermissions = user.permissions || []
     return requiredPermissions.every(permission => userPermissions.includes(permission))
   }

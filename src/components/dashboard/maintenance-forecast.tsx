@@ -157,8 +157,8 @@ export function MaintenanceForecast({ insights, nextMaintenanceDate }: Maintenan
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-xs font-bold">
-                      Urgência: {insight.urgencyScore}/100
+                    <div className="text-xs font-black uppercase opacity-60">
+                      URGÊNCIA: {Math.round(insight.urgencyScore)}/100
                     </div>
                     {insight.estimatedCost && (
                       <div className="text-xs mt-1">

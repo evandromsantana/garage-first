@@ -77,7 +77,7 @@ class PerformanceAgent {
   // Medir uso de memória
   measureMemoryUsage() {
     if (typeof window !== 'undefined' && 'memory' in performance) {
-      const memory = (performance as any).memory
+      const memory = (performance as unknown as { memory: { usedJSHeapSize: number } }).memory
       this.metrics.memoryUsage = memory.usedJSHeapSize
       return this.metrics.memoryUsage
     }
@@ -85,7 +85,7 @@ class PerformanceAgent {
   }
 
   // Otimizar lazy loading de componentes
-  createLazyComponent<T extends React.ComponentType<any>>(
+  createLazyComponent<T extends React.ComponentType<Record<string, unknown>>>(
     importFunc: () => Promise<{ default: T }>,
     componentName: string
   ) {

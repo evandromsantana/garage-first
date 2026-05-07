@@ -1,8 +1,8 @@
 "use client"
 
-import { useMemo, useState, useEffect } from "react"
-import { VehicleSummary, PredictiveInsight, UsagePattern, VehicleHealthScore, MaintenanceType } from "@/types"
-import { PREDICTIVE_RULES, ALERT_THRESHOLD_KM } from "@/lib/constants/maintenance"
+import { ALERT_THRESHOLD_KM, PREDICTIVE_RULES } from "@/lib/constants/maintenance"
+import { MaintenanceLog, MaintenanceType, PredictiveInsight, UsagePattern, VehicleHealthScore } from "@/types"
+import { useEffect, useMemo, useState } from "react"
 
 interface UsePredictiveMaintenanceReturn {
   insights: PredictiveInsight[]
@@ -18,8 +18,9 @@ interface UsePredictiveMaintenanceReturn {
   criticalAlerts: PredictiveInsight[]
 }
 
-export function usePredictiveMaintenance(vehicle: VehicleSummary): UsePredictiveMaintenanceReturn {
+export function usePredictiveMaintenance(initialLogs: MaintenanceLog[] = [], currentKm: number = 0): UsePredictiveMaintenanceReturn {
   const [currentTime, setCurrentTime] = useState(() => Date.now())
+  const maintenanceLogs = useMemo(() => Array.isArray(initialLogs) ? initialLogs : [], [initialLogs])
   
   useEffect(() => {
     const interval = setInterval(() => setCurrentTime(Date.now()), 60 * 1000)
@@ -27,7 +28,6 @@ export function usePredictiveMaintenance(vehicle: VehicleSummary): UsePredictive
   }, [])
 
   const insights = useMemo(() => {
-    const { maintenanceLogs, currentKm } = vehicle
     const insights: PredictiveInsight[] = []
 
     // Analyze each maintenance type based on rules
@@ -113,12 +113,19 @@ export function usePredictiveMaintenance(vehicle: VehicleSummary): UsePredictive
       }
     })
 
-    return insights.sort((a, b) => b.urgencyScore - a.urgencyScore)
-  }, [vehicle, currentTime])
+    // Deduplicar insights pelo nome, mantendo o de maior urgência
+    const uniqueInsightsMap = new Map<string, PredictiveInsight>()
+    insights.forEach(insight => {
+      const existing = uniqueInsightsMap.get(insight.name)
+      if (!existing || insight.urgencyScore > existing.urgencyScore) {
+        uniqueInsightsMap.set(insight.name, insight)
+      }
+    })
+
+    return Array.from(uniqueInsightsMap.values()).sort((a, b) => b.urgencyScore - a.urgencyScore)
+  }, [maintenanceLogs, currentKm, currentTime])
 
   const usagePattern = useMemo(() => {
-    const { maintenanceLogs } = vehicle
-    
     if (maintenanceLogs.length < 2) {
       return {
         averageKmPerMonth: 1000, // Default estimate
@@ -142,6 +149,28 @@ export function usePredictiveMaintenance(vehicle: VehicleSummary): UsePredictive
       const monthsDiff = (new Date(lastLog.createdAt).getTime() - new Date(firstLog.createdAt).getTime()) / (1000 * 60 * 60 * 24 * 30)
       const kmDiff = lastLog.kmAtService - firstLog.kmAtService
       averageKmPerMonth = monthsDiff > 0 ? kmDiff / monthsDiff : 1000
+    }
+
+    // AI Predictive Riding Style logic
+    let ridingStyle = "COMMUTE"
+    if (averageKmPerMonth > 2000) {
+      ridingStyle = "TOURING"
+    } else {
+      // Check if brakes/tires are replaced very often (indicating Track/Aggressive)
+      const brakeLogs = sortedLogs.filter(l => l.description.toLowerCase().includes('pastilha') || l.description.toLowerCase().includes('freio'))
+      if (brakeLogs.length >= 2) {
+        const firstBrake = brakeLogs[0]
+        const secondBrake = brakeLogs[1]
+        
+        if (firstBrake && secondBrake) {
+          const brakeKmDiff = secondBrake.kmAtService - firstBrake.kmAtService
+          if (brakeKmDiff > 0 && brakeKmDiff < 5000) {
+            ridingStyle = "TRACK_DAY"
+          } else if (brakeKmDiff < 8000) {
+            ridingStyle = "AGGRESSIVE"
+          }
+        }
+      }
     }
 
     // Calculate cost trend
@@ -174,12 +203,12 @@ export function usePredictiveMaintenance(vehicle: VehicleSummary): UsePredictive
       seasonalVariation: 0.15, // Simplified
       mostFrequentType,
       costTrend,
+      ridingStyle, // Added to usagePattern
       peakUsageMonth: null // Simplified
     }
-  }, [vehicle])
+  }, [maintenanceLogs])
 
   const healthScore = useMemo(() => {
-    const { maintenanceLogs, currentKm } = vehicle
     const categoryScores = {
       engine: 100,
       brakes: 100,
@@ -211,7 +240,7 @@ export function usePredictiveMaintenance(vehicle: VehicleSummary): UsePredictive
       lastUpdated: new Date(),
       trend: "stable" as const
     }
-  }, [vehicle, insights])
+  }, [maintenanceLogs, currentKm, insights])
 
   const projectedCosts = useMemo(() => {
     const next30Days = insights

@@ -1,10 +1,10 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { createVehicle } from "@/app/actions"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Plus, Settings, Bike } from "lucide-react"
-import { createVehicle } from "@/app/actions"
-import { cookies } from "next/headers"
+import { requireAuth } from "@/lib/auth-server"
+import { Bike, Plus, Settings } from "lucide-react"
 import { redirect } from "next/navigation"
 
 export default async function SetupPage() {
@@ -19,21 +19,12 @@ export default async function SetupPage() {
       throw new Error("Todos os campos são obrigatórios")
     }
     
-    // Get user from cookie
-    const cookieStore = await cookies()
-    const authToken = cookieStore.get('auth-token')?.value
-    
-    if (!authToken) {
-      throw new Error("Usuário não autenticado")
-    }
-    
-    const user = JSON.parse(authToken)
+    const user = await requireAuth()
     
     await createVehicle({
       model,
       year,
       currentKm,
-      userId: user.id
     })
     
     redirect("/dashboard")

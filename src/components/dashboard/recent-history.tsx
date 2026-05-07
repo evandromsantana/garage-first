@@ -1,7 +1,6 @@
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Wrench, ChevronRight } from "lucide-react"
 import Link from "next/link"
 import { MaintenanceLogSummary } from "@/types"
@@ -10,38 +9,38 @@ interface RecentHistoryProps {
   logs: MaintenanceLogSummary[]
 }
 
-export function RecentHistory({ logs }: RecentHistoryProps) {
+export function RecentHistory({ logs = [] }: RecentHistoryProps) {
   return (
-    <Card className="bg-card border-4 border-foreground rounded-none shadow-none">
-      <CardHeader className="pb-3 border-b-2 border-foreground">
-        <CardTitle className="text-sm font-black uppercase flex items-center gap-2">
-          <Wrench className="h-5 w-5" />
-          Histórico Recente
+    <Card className="kindle-card">
+      <CardHeader className="pb-4 border-b-4 border-foreground">
+        <CardTitle className="text-xl font-black uppercase flex items-center gap-2 italic">
+          <Wrench className="h-6 w-6" />
+          Índice de Manutenções
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3 pt-3">
-        {logs.slice(0, 3).map((log) => (
-          <Link key={log.id} href={`/maintenance/${log.id}`}>
-            <div className="flex items-center justify-between p-3 border-2 border-foreground rounded-none bg-background hover:bg-foreground hover:text-background transition-none mb-3 group">
-              <div>
-                <p className="text-sm font-bold uppercase">{log.description}</p>
-                <p className="text-xs font-bold uppercase tracking-widest opacity-70 group-hover:text-background">
-                  {new Date(log.createdAt).toLocaleDateString("pt-BR")}
-                </p>
+      <CardContent className="p-0 divide-y-2 divide-foreground">
+        {logs.slice(0, 5).map((log, index) => (
+          <Link key={log.id} href={`/maintenance/${log.id}`} className="block group">
+            <div className="flex items-center justify-between p-5 hover:bg-foreground hover:text-background transition-none">
+              <div className="flex gap-4 items-baseline">
+                <span className="font-mono text-xs opacity-50">0{index + 1}</span>
+                <div className="space-y-1">
+                  <p className="text-lg font-black uppercase leading-none tracking-tight">{log.description}</p>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-60">
+                    Pág. {log.kmAtService} KM • {new Date(log.createdAt).toLocaleDateString("pt-BR")}
+                  </p>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Badge variant="outline" className={`rounded-none border-2 font-black uppercase text-[10px] tracking-widest ${log.status === "COMPLETED" ? "border-foreground bg-foreground text-background group-hover:border-background group-hover:bg-background group-hover:text-foreground" : "border-dashed border-foreground text-foreground group-hover:border-background group-hover:text-background"}`}>
-                  {log.status === "COMPLETED" ? "[ OK ]" : "[ WAIT ]"}
-                </Badge>
-                <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-background" />
-              </div>
+              <ChevronRight className="h-5 w-5 opacity-30 group-hover:opacity-100" />
             </div>
           </Link>
         ))}
         {logs.length === 0 && (
-          <p className="text-sm text-muted-foreground text-center py-4 font-bold uppercase">
-            Nenhum registro ainda
-          </p>
+          <div className="p-10 text-center">
+            <p className="text-sm font-bold uppercase tracking-widest opacity-30">
+              Nenhum capítulo registrado
+            </p>
+          </div>
         )}
       </CardContent>
     </Card>

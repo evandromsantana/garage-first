@@ -7,6 +7,8 @@ import { ErrorBoundary } from "@/components/error-boundary";
 import { OfflineIndicator } from "@/components/offline-indicator";
 import { ThemeScript } from "@/components/theme-script";
 import { QueryProvider } from "@/lib/query-client";
+import { GloveModeProvider } from "@/contexts/glove-mode";
+import { VoiceAgent } from "@/components/voice-agent";
 
 // Font estilo Kindle - serif para leitura confortável
 const merriweather = Merriweather({
@@ -55,14 +57,17 @@ export default function RootLayout({
     >
       <body suppressHydrationWarning className="min-h-full flex flex-col bg-background text-foreground tracking-tight selection:bg-foreground/10 pb-16 font-serif">
         <ThemeScript />
-        <QueryProvider>
-          <ErrorBoundary>
-            <OfflineIndicator />
-            {children}
-          </ErrorBoundary>
-          <Toaster position="top-center" />
-          <MobileNav />
-        </QueryProvider>
+        <GloveModeProvider>
+          <QueryProvider>
+            <ErrorBoundary>
+              <OfflineIndicator />
+              {children}
+            </ErrorBoundary>
+            <Toaster position="top-center" />
+            <MobileNav />
+
+          </QueryProvider>
+        </GloveModeProvider>
       </body>
     </html>
   );

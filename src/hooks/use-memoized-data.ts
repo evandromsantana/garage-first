@@ -3,12 +3,13 @@
  * Evita re-renderizações desnecessárias e cache de dados
  */
 
-import { useMemo, useCallback, useRef, useState } from 'react'
-import { VehicleSummary, MaintenanceLog, ProjectExpense } from '@/types'
+import { MaintenanceLog, VehicleSummary } from '@/types'
+import { useCallback, useMemo, useRef, useState } from 'react'
 
 // Hook para memoizar cálculos de métricas
 export function useMemoizedMetrics(vehicle: VehicleSummary) {
-  const { maintenanceLogs, currentKm } = vehicle
+  const maintenanceLogs = vehicle.maintenanceLogs || []
+  const currentKm = vehicle.currentKm || 0
 
   // Total gasto
   const totalSpent = useMemo(() => 
@@ -130,9 +131,9 @@ export function useMemoizedMaintenanceFilters(logs: MaintenanceLog[]) {
 }
 
 // Hook para memoizar busca e ordenação
-export function useMemoizedSearch(items: any[], searchFields: string[]) {
+export function useMemoizedSearch<T extends Record<string, any>>(items: T[], searchFields: (keyof T & string)[]) {
   const [searchTerm, setSearchTerm] = useState('')
-  const [sortBy, setSortBy] = useState('')
+  const [sortBy, setSortBy] = useState<keyof T | ''>('')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
 
   const filteredAndSortedItems = useMemo(() => {
@@ -142,7 +143,7 @@ export function useMemoizedSearch(items: any[], searchFields: string[]) {
     if (searchTerm) {
       filtered = items.filter(item =>
         searchFields.some(field =>
-          item[field]?.toString().toLowerCase().includes(searchTerm.toLowerCase())
+          (item[field] as any)?.toString().toLowerCase().includes(searchTerm.toLowerCase())
         )
       )
     }
@@ -162,7 +163,7 @@ export function useMemoizedSearch(items: any[], searchFields: string[]) {
     return filtered
   }, [items, searchTerm, searchFields, sortBy, sortOrder])
 
-  const toggleSort = useCallback((field: string) => {
+  const toggleSort = useCallback((field: keyof T & string) => {
     if (sortBy === field) {
       setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')
     } else {
@@ -185,7 +186,8 @@ export function useMemoizedSearch(items: any[], searchFields: string[]) {
 
 // Hook para memoizar cálculos de analytics
 export function useMemoizedAnalytics(vehicle: VehicleSummary) {
-  const { maintenanceLogs, currentKm } = vehicle
+  const maintenanceLogs = vehicle.maintenanceLogs || []
+  const currentKm = vehicle.currentKm || 0
 
   // Análise temporal
   const monthlySpending = useMemo(() => {
@@ -231,9 +233,14 @@ export function useMemoizedAnalytics(vehicle: VehicleSummary) {
     
     const intervals = []
     for (let i = 1; i < sortedLogs.length; i++) {
-      const daysBetween = (new Date(sortedLogs[i].createdAt).getTime() - 
-                         new Date(sortedLogs[i-1].createdAt).getTime()) / (1000 * 60 * 60 * 24)
-      intervals.push(daysBetween)
+      const currentLog = sortedLogs[i]
+      const prevLog = sortedLogs[i-1]
+      
+      if (currentLog && prevLog) {
+        const daysBetween = (new Date(currentLog.createdAt).getTime() - 
+                           new Date(prevLog.createdAt).getTime()) / (1000 * 60 * 60 * 24)
+        intervals.push(daysBetween)
+      }
     }
     
     const avgInterval = intervals.reduce((sum, interval) => sum + interval, 0) / intervals.length

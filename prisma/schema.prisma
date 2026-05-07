@@ -16,19 +16,29 @@ model User {
   updatedAt DateTime @updatedAt
 
   vehicles Vehicle[]
+  inventoryItems InventoryItem[]
 }
 
 model Vehicle {
-  id        String   @id @default(uuid())
-  model     String
-  year      Int
-  currentKm Int      @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  userId    String
+  id          String   @id @default(uuid())
+  ownerName   String?
+  brand       String?
+  model       String
+  year        Int
+  plate       String?
+  renavam     String?
+  chassis     String?
+  engineNumber String?
+  color       String?
+  uf          String?
+  currentKm   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  userId      String
 
   user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   maintenanceLogs MaintenanceLog[]
+  technicalSpecs  TechnicalSpec[]
 }
 
 model MaintenanceLog {
@@ -60,9 +70,30 @@ model ProjectExpense {
 
 model TechnicalSpec {
   id          String   @id @default(uuid())
-  category    String
+  vehicleId   String
+  category    String   // TORQUE, PRESSURE, CAPACITY, FLUID
   component   String
-  torqueNm    Float?
+  value       String
   notes       String?
   diagramCode String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  vehicle     Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+}
+
+model InventoryItem {
+  id            String   @id @default(uuid())
+  name          String
+  quantity      Int      @default(0)
+  minQuantity   Int      @default(1)
+  category      String   // CONSUMABLE, PART, TOOL
+  price         Float?
+  location      String?  // Ex: Prateleira A, Gaveta 2
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  userId        String
+
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

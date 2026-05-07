@@ -1,50 +1,29 @@
-import { getPendingMaintenance } from "@/app/actions"
-import { DashboardClient } from "@/components/dashboard-client"
-import { cookies } from "next/headers"
-import { redirect } from "next/navigation"
-import Link from "next/link"
-import { Card, CardContent } from "@/components/ui/card"
+import { getInventoryItems, getPendingMaintenance, getTechnicalSpecs } from "@/app/actions"
+import DashboardClient from "@/components/dashboard-client"
 import { Button } from "@/components/ui/button"
-import { Bike, Plus } from "lucide-react"
-import { verifyToken } from "@/lib/auth"
+import { Card, CardContent } from "@/components/ui/card"
+import { requireAuth } from "@/lib/auth-server"
 import { prisma } from "@/lib/db"
+import { VehicleSummary } from "@/types"
+import { Bike, Plus } from "lucide-react"
+import Link from "next/link"
+import { redirect } from "next/navigation"
 
 export default async function DashboardPage() {
-  // Verificar autenticação
-  const cookieStore = await cookies()
-  const authToken = cookieStore.get('auth-token')?.value
-  
-  console.log('🔍 [DASHBOARD] Verificando autenticação...')
-  console.log('🔍 [DASHBOARD] Token encontrado:', authToken ? 'Sim' : 'Não')
-  
-  if (!authToken) {
-    console.log('❌ [DASHBOARD] Token não encontrado, redirecionando para login')
-    redirect('/auth/login')
-  }
-  
-  const user = verifyToken(authToken)
-  console.log('🔍 [DASHBOARD] Token verificado:', user ? 'Válido' : 'Inválido')
-  
-  if (!user) {
-    console.log('❌ [DASHBOARD] Token inválido, redirecionando para login')
+  let user;
+  try {
+    user = await requireAuth()
+  } catch (_error) {
     redirect('/auth/login')
   }
   
   console.log('✅ [DASHBOARD] Usuário autenticado:', { id: user.id, email: user.email, name: user.name })
 
-  // Buscar veículos do usuário com a estrutura correta para VehicleSummary
+  // Iniciar todas as buscas de dados em paralelo para otimizar o carregamento
+  // Primeiro buscamos o usuário e seus veículos básicos
   const vehicles = await prisma.vehicle.findMany({
     where: { userId: user.id },
-    include: {
-      maintenanceLogs: {
-        include: {
-          expenses: true,
-        },
-        orderBy: {
-          createdAt: 'desc',
-        },
-      },
-    },
+    select: { id: true, model: true, brand: true, currentKm: true, year: true, color: true, plate: true }
   })
 
   if (vehicles.length === 0) {
@@ -81,8 +60,42 @@ export default async function DashboardPage() {
   }
 
   // Para simplificar, usar o primeiro veículo (futuramente implementar seleção)
-  const vehicle = vehicles[0]
-  const pending = await getPendingMaintenance(vehicle.id)
+  const baseVehicle = vehicles[0]
+  if (!baseVehicle) return null
 
-  return <DashboardClient vehicle={vehicle} pending={pending} />
+  // Buscar detalhes do veículo, tarefas pendentes, inventário e especificações em paralelo
+  const [vehicleData, pending, inventory, specs] = await Promise.all([
+    prisma.vehicle.findUnique({
+      where: { id: baseVehicle.id },
+      include: {
+        maintenanceLogs: {
+          include: { expenses: true },
+          orderBy: { createdAt: 'desc' },
+          take: 50, // Limitar para performance, mas manter o suficiente para predição
+        },
+      },
+    }),
+    getPendingMaintenance(baseVehicle.id),
+    getInventoryItems(user.id),
+    getTechnicalSpecs(baseVehicle.id)
+  ])
+
+  if (!vehicleData) return null
+
+  // Transform explicit type if needed or rely on inferred
+  const vehicleSummary: VehicleSummary = {
+    ...vehicleData,
+    ownerName: vehicleData.ownerName || null,
+    brand: vehicleData.brand || null,
+    plate: vehicleData.plate || null,
+    renavam: vehicleData.renavam || null,
+    chassis: vehicleData.chassis || null,
+    engineNumber: vehicleData.engineNumber || null,
+    color: vehicleData.color || null,
+    uf: vehicleData.uf || null,
+    maintenanceLogs: vehicleData.maintenanceLogs as any // Type-safe cast needed for complex relations
+  }
+
+  return <DashboardClient vehicle={vehicleSummary} pending={pending} inventory={inventory} specs={specs} />
+
 }

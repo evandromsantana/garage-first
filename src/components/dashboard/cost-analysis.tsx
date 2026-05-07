@@ -64,6 +64,21 @@ export function CostAnalysis({ usagePattern, projectedCosts }: CostAnalysisProps
         </CardTitle>
       </CardHeader>
       <CardContent className="p-4 space-y-4">
+        <div className="grid grid-cols-2 gap-3 mb-4 border-b-4 border-foreground pb-4">
+          <div className="border-2 border-foreground p-2 text-center bg-muted/30">
+            <p className="text-[10px] font-bold uppercase text-muted-foreground">Estilo de Pilotagem</p>
+            <p className="text-xl font-black uppercase text-foreground">
+              {usagePattern.ridingStyle === "TRACK_DAY" ? "Autódromo" : 
+               usagePattern.ridingStyle === "AGGRESSIVE" ? "Agressivo" : 
+               usagePattern.ridingStyle === "TOURING" ? "Viagem" : "Urbano"}
+            </p>
+          </div>
+          <div className="border-2 border-foreground p-2 text-center bg-muted/30">
+            <p className="text-[10px] font-bold uppercase text-muted-foreground">Média Mensal</p>
+            <p className="text-xl font-black">{Math.round(usagePattern?.averageKmPerMonth ?? 0)} <span className="text-xs">km/mês</span></p>
+          </div>
+        </div>
+
         {/* Usage Pattern */}
         <div className="space-y-3">
           <h4 className="text-sm font-black uppercase">Padrão de Uso</h4>
@@ -71,7 +86,7 @@ export function CostAnalysis({ usagePattern, projectedCosts }: CostAnalysisProps
             <div className="p-3 bg-muted border-2 border-dashed border-foreground rounded">
               <div className="text-xs font-bold uppercase text-muted-foreground">KM/Mês</div>
               <div className="text-lg font-black">
-                {usagePattern.averageKmPerMonth.toLocaleString("pt-BR")}
+                {(usagePattern?.averageKmPerMonth ?? 0).toLocaleString("pt-BR")}
               </div>
             </div>
             <div className="p-3 bg-muted border-2 border-dashed border-foreground rounded">

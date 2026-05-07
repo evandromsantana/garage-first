@@ -1,10 +1,10 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Bell, Calendar, Clock, CheckCircle, Plus, Settings } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Bell, CheckCircle, Clock, Plus, Settings } from "lucide-react"
+import { useEffect, useState } from "react"
 
 interface Reminder {
   id: string
@@ -15,7 +15,7 @@ interface Reminder {
   recurring: boolean
   frequency?: "daily" | "weekly" | "monthly" | "yearly"
   isActive: boolean
-  completedAt?: Date
+  completedAt?: Date | undefined
 }
 
 interface ReminderSystemProps {

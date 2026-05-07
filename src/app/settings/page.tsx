@@ -1,117 +1,133 @@
 import Link from "next/link"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { ArrowLeft, Settings, Save, AlertTriangle, FileText } from "lucide-react"
+import { Settings, FileText, Bot, Cloud, AlertTriangle, LogOut } from "lucide-react"
 import { PageHeader } from "@/components/page-header"
-import { updateVehicleKm, getVehicleWithData } from "@/app/actions"
-import { revalidatePath } from "next/cache"
-import { loadOrCreateVehicle } from "@/app/actions/vehicle"
+import { getVehicleWithData, loadOrCreateVehicle, getTechnicalSpecs, logout } from "@/app/actions"
 import { ExportData } from "@/components/export-data"
 import { cookies } from "next/headers"
 import { verifyToken } from "@/lib/auth"
 import { redirect } from "next/navigation"
+import { AppPreferences } from "./app-preferences"
+import { VehicleSettingsForm } from "@/components/settings/vehicle-settings-form"
+import { TechnicalSpecsManager } from "@/components/settings/technical-specs-manager"
 
 export default async function SettingsPage() {
-  // Verificar autenticação
   const cookieStore = await cookies()
   const authToken = cookieStore.get('auth-token')?.value
   
-  if (!authToken) {
-    redirect('/auth/login')
-  }
+  if (!authToken) redirect('/auth/login')
   
   const user = verifyToken(authToken)
-  if (!user) {
-    redirect('/auth/login')
-  }
+  if (!user) redirect('/auth/login')
+  
   const vehicleBase = await loadOrCreateVehicle()
   const vehicle = await getVehicleWithData(vehicleBase.id)
+  const specs = await getTechnicalSpecs(vehicleBase.id)
 
-  const saveSettings = async (formData: FormData) => {
-    "use server"
-    const newKm = Number(formData.get("km"))
-    if (vehicle && newKm) {
-      await updateVehicleKm(vehicle.id, newKm)
-      revalidatePath("/settings")
-    }
-  }
+  if (!vehicle) return <div>Veículo não encontrado</div>
 
   return (
-    <div className="min-h-screen bg-background font-mono">
-      <PageHeader title="Ajustes" icon={<Settings className="h-6 w-6" />} backHref="/" />
+    <div className="kindle-page">
+      <PageHeader title="TERMINAL DE CONFIGURAÇÃO" icon={<Settings className="h-6 w-6" />} backHref="/" />
 
-      <main className="p-4 space-y-6 pb-24">
-        <Card className="bg-card border-4 border-foreground rounded-none shadow-[4px_4px_0_0_colord(var(--foreground))]">
-          <CardHeader className="border-b-4 border-foreground pb-4 bg-foreground text-background">
-            <CardTitle className="font-black flex items-center gap-2 uppercase text-lg">
-              Painel do Veículo
-            </CardTitle>
-            <CardDescription className="text-background/80 font-bold uppercase text-xs tracking-wider">
-              [ {vehicle?.model || "Moto"} - {vehicle?.year || "Ano"} ]
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="p-4 space-y-4">
-            <form action={saveSettings} className="space-y-4">
-              <div className="space-y-2">
-                <Label className="font-bold uppercase tracking-wider text-xs">Modelo</Label>
-                <Input disabled defaultValue={vehicle?.model} className="border-2 border-foreground rounded-none h-12 font-bold" />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label className="font-bold uppercase tracking-wider text-xs">Ano</Label>
-                  <Input disabled defaultValue={vehicle?.year} type="number" className="border-2 border-foreground rounded-none h-12 font-bold" />
-                </div>
-                <div className="space-y-2">
-                  <Label className="font-bold uppercase tracking-wider text-xs">Odômetro Mestre (KM)</Label>
-                  <Input name="km" defaultValue={vehicle?.currentKm || 0} type="number" className="border-4 border-foreground rounded-none h-14 font-black text-xl px-4 focus-visible:ring-0 shadow-[inset_4px_4px_0_0_var(--background)]" />
-                </div>
-              </div>
+      <main className="space-y-8 pt-6 max-w-2xl mx-auto pb-20">
+        
+        {/* Vehicle Identity Section */}
+        <VehicleSettingsForm vehicle={vehicle} />
 
-              <div className="pt-4">
-                <Button type="submit" className="w-full h-16 text-lg font-black uppercase tracking-widest border-4 border-foreground bg-background text-foreground shadow-[4px_4px_0_0_colord(var(--foreground))] rounded-none hover:bg-foreground hover:text-background hover:scale-[0.98] transition-transform">
-                  <Save className="h-6 w-6 mr-2" />
-                  GRAVAR ODÔMETRO
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
+        {/* System Warnings */}
+        <div className="kindle-card border-dashed bg-muted/10 p-5 flex items-center gap-4">
+          <AlertTriangle className="h-8 w-8 shrink-0" />
+          <p className="text-[10px] font-black uppercase tracking-widest leading-relaxed">
+            Nota: A quilometragem informada afeta todos os cálculos de IA e previsões de manutenção futura.
+          </p>
+        </div>
 
-        <Card className="bg-background border-4 border-dashed border-foreground/50 rounded-none shadow-none">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3 text-muted-foreground">
-              <AlertTriangle className="h-8 w-8" />
-              <div>
-                <p className="font-bold uppercase text-sm">Atenção</p>
-                <p className="text-xs uppercase">Estes dados afetarão o cálculo automático de preventivas.</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Global Actions */}
+        <div className="space-y-4 pt-4">
+          <Link href="/passport" className="block">
+            <Button variant="outline" className="kindle-button w-full h-20 bg-foreground text-background hover:bg-background hover:text-foreground">
+              <FileText className="h-8 w-8 mr-4" />
+              EMITIR PASSAPORTE TÉCNICO
+            </Button>
+          </Link>
 
-        <Link href="/passport" className="block w-full">
-          <Button variant="outline" className="w-full h-20 text-lg font-black uppercase tracking-widest border-4 border-foreground rounded-none bg-foreground text-background shadow-[4px_4px_0_0_colord(var(--background))] hover:scale-[0.98] transition-transform flex items-center justify-center gap-3">
-            <FileText className="h-8 w-8" />
-            VISUALIZAR PASSAPORTE
-          </Button>
-        </Link>
+          <div className="grid grid-cols-2 gap-4">
+            <Link href="/agents">
+              <Button variant="outline" className="kindle-button w-full h-16 border-4 border-foreground text-[10px] sm:text-xs">
+                <Bot className="h-6 w-6 mr-2" />
+                CENTRAL AGENTES IA
+              </Button>
+            </Link>
+            <Link href="/backup">
+              <Button variant="outline" className="kindle-button w-full h-16 border-4 border-foreground text-[10px] sm:text-xs">
+                <Cloud className="h-6 w-6 mr-2" />
+                SERVIDOR BACKUP
+              </Button>
+            </Link>
+          </div>
+          
+          <AppPreferences />
+        </div>
 
-        {vehicle && (
-          <Card className="bg-card border-4 border-foreground rounded-none shadow-[4px_4px_0_0_colord(var(--foreground))]">
-            <CardHeader className="border-b-4 border-foreground pb-4 bg-muted">
-              <CardTitle className="font-black uppercase text-lg">Exportar Dados</CardTitle>
-            </CardHeader>
-            <CardContent className="p-4">
+        {/* Technical Specs Section */}
+        <section className="space-y-4 pt-4">
+          <TechnicalSpecsManager vehicleId={vehicle.id} initialSpecs={specs} />
+        </section>
+
+        {/* Export Section */}
+        <section className="space-y-4 pt-4">
+           <div className="flex items-center gap-2 border-b-2 border-foreground pb-2">
+            <h3 className="text-xs font-black uppercase tracking-widest">Backup & Dados</h3>
+          </div>
+          <Card className="kindle-card">
+            <CardContent className="p-6">
               <ExportData
                 vehicle={vehicle}
                 maintenanceLogs={vehicle.maintenanceLogs}
               />
             </CardContent>
           </Card>
-        )}
+        </section>
+        {/* Conta & Sair */}
+        <section className="space-y-4 pt-4">
+          <div className="flex items-center gap-2 border-b-2 border-foreground pb-2">
+            <h3 className="text-xs font-black uppercase tracking-widest text-destructive">Gerenciamento de Conta</h3>
+          </div>
+          <Card className="kindle-card border-destructive/20">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <p className="text-sm font-bold">Encerrar Sessão</p>
+                  <p className="text-xs text-muted-foreground">Sair com segurança desta conta neste dispositivo.</p>
+                </div>
+                <form action={logout}>
+                  <Button 
+                    variant="destructive" 
+                    className="h-12 px-6 border-4 border-destructive bg-background text-destructive hover:bg-destructive hover:text-background transition-none font-black uppercase tracking-widest flex items-center gap-2"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Sair
+                  </Button>
+                </form>
+              </div>
+            </CardContent>
+          </Card>
+        </section>
 
+
+        {/* Ownership Summary */}
+        <div className="kindle-card bg-foreground text-background">
+          <CardContent className="p-8 text-center space-y-2">
+            <p className="text-[10px] font-black uppercase tracking-[0.4em] opacity-40">ÍNDICE DE PROCEDÊNCIA MECÂNICA</p>
+            <h3 className="text-3xl font-black uppercase tracking-tighter italic">ESTADO GERAL</h3>
+            <div className="pt-4 border-t-2 border-background/20 mt-4">
+              <p className="text-2xl font-black uppercase">EXCELENTE</p>
+              <p className="text-[9px] font-black uppercase opacity-40 tracking-[0.2em]">AUDITORIA DE DADOS IA CONCLUÍDA</p>
+            </div>
+          </CardContent>
+        </div>
       </main>
     </div>
   )

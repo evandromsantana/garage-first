@@ -1,9 +1,12 @@
-import { loadOrCreateVehicle } from "@/app/actions/vehicle"
-import NewMaintenanceForm from "@/components/new-maintenance-form"
+import { loadOrCreateVehicle, getInventoryItems } from "@/app/actions"
+import NewMaintenanceForm from "@/components/maintenance/new-maintenance-form"
 import { ErrorMessage } from "@/components/ui/error-message"
 
 export default async function NewMaintenancePage() {
-  const vehicle = await loadOrCreateVehicle()
+  const [vehicle, inventory] = await Promise.all([
+    loadOrCreateVehicle(),
+    getInventoryItems()
+  ])
 
   if (!vehicle) {
     return (
@@ -13,5 +16,11 @@ export default async function NewMaintenancePage() {
     )
   }
 
-  return <NewMaintenanceForm vehicleId={vehicle.id} initialKm={vehicle.currentKm} />
+  return (
+    <NewMaintenanceForm 
+      vehicleId={vehicle.id} 
+      initialKm={vehicle.currentKm} 
+      inventory={inventory} 
+    />
+  )
 }

@@ -27,8 +27,16 @@ export type TechnicalSpec = Prisma.TechnicalSpecGetPayload<object>
 
 // DTO Types for API/Forms
 export interface CreateVehicleInput {
+  ownerName?: string
+  brand?: string
   model: string
   year: number
+  plate?: string
+  renavam?: string
+  chassis?: string
+  engineNumber?: string
+  color?: string
+  uf?: string
   currentKm?: number
 }
 
@@ -49,10 +57,11 @@ export interface CreateExpenseInput {
 }
 
 export interface PartInput {
-  id: string
+  id?: string
   name: string
   cost: number
-  isOriginal: boolean
+  isOriginal?: boolean
+  inventoryItemId?: string
 }
 
 export interface SubmitFullMaintenanceInput {
@@ -66,10 +75,20 @@ export interface SubmitFullMaintenanceInput {
 // UI Types
 export interface VehicleSummary {
   id: string
+  ownerName: string | null
+  brand: string | null
   model: string
   year: number
+  plate: string | null
+  renavam: string | null
+  chassis: string | null
+  engineNumber: string | null
+  color: string | null
+  uf: string | null
   currentKm: number
-  maintenanceLogs: MaintenanceLogSummary[]
+  createdAt: Date
+  updatedAt: Date
+  maintenanceLogs: (MaintenanceLog & { expenses: ProjectExpense[] })[]
 }
 
 export interface MaintenanceLogSummary {
@@ -109,11 +128,12 @@ export interface PredictiveInsight {
 }
 
 export interface UsagePattern {
-  averageKmPerMonth: number
-  seasonalVariation: number
-  mostFrequentType: MaintenanceType
-  costTrend: "increasing" | "decreasing" | "stable"
-  peakUsageMonth: number | null
+  averageKmPerMonth: number;
+  seasonalVariation: number;
+  mostFrequentType: MaintenanceType;
+  costTrend: 'increasing' | 'decreasing' | 'stable';
+  peakUsageMonth: number | null;
+  ridingStyle?: string;
 }
 
 export interface SmartAlert {
@@ -151,4 +171,29 @@ export interface DashboardData {
   pending: PendingTask[]
   totalSpent: number
   costPerKm: number
+}
+
+// Inventory Types
+export type InventoryCategory = 'CONSUMABLE' | 'PART' | 'TOOL'
+
+export interface InventoryItem {
+  id: string
+  name: string
+  quantity: number
+  minQuantity: number
+  category: InventoryCategory
+  price?: number | null
+  location?: string | null
+  notes?: string | null
+  createdAt: Date
+  updatedAt: Date
+}
+
+export interface CreateInventoryItemInput {
+  name: string
+  quantity: number
+  minQuantity: number
+  category: InventoryCategory
+  location?: string
+  notes?: string
 }

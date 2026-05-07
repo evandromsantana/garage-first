@@ -1,21 +1,20 @@
 "use client"
 
-import { useParams } from "next/navigation"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Trash2, Check, X, Wrench } from "lucide-react"
-import { useMaintenance } from "@/hooks/use-maintenance"
-import { Loading } from "@/components/ui/loading"
-import { ErrorMessage } from "@/components/ui/error-message"
-import { calculateTotalSpent, formatCurrency } from "@/lib/utils"
 import { PageHeader } from "@/components/page-header"
-import Link from "next/link"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { ErrorMessage } from "@/components/ui/error-message"
+import { Loading } from "@/components/ui/loading"
+import { useMaintenance } from "@/hooks/use-maintenance"
+import { calculateTotalSpent, formatCurrency } from "@/lib/utils"
+import { Check, Trash2, Wrench, X } from "lucide-react"
+import { useParams } from "next/navigation"
 
 export default function MaintenanceDetailPage() {
   const params = useParams()
   const { maintenance, loading, handleStatusChange, handleDelete } = useMaintenance(
-    params.id as string
+    params['id'] as string
   )
 
   if (loading) {

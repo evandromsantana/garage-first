@@ -12,14 +12,11 @@ interface AgentsPanelProps {
 }
 
 export function AgentsPanel({ className }: AgentsPanelProps) {
-  const [agents, setAgents] = useState<AgentStatus[]>([])
+  const [agents, setAgents] = useState<AgentStatus[]>(() => agentManager.getAgentsStatus())
   const [isRunning, setIsRunning] = useState(false)
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null)
 
   useEffect(() => {
-    // Carregar status inicial dos agentes
-    const status = agentManager.getAgentsStatus()
-    setAgents(status)
     setLastUpdate(new Date())
   }, [])
 
@@ -109,7 +106,7 @@ export function AgentsPanel({ className }: AgentsPanelProps) {
                 <span className="text-sm font-bold capitalize">{agent.name}</span>
               </div>
               <div className="flex items-center gap-2">
-                {agent.metrics?.score !== undefined && (
+                {typeof agent.metrics === 'object' && agent.metrics?.score !== undefined && (
                   <span className={`text-xs font-bold ${getScoreColor(agent.metrics.score)}`}>
                     {agent.metrics.score}/100
                   </span>
@@ -123,7 +120,7 @@ export function AgentsPanel({ className }: AgentsPanelProps) {
         </div>
 
         {/* Alerts */}
-        {agents.some(a => a.metrics?.score < 60) && (
+        {agents.some(a => typeof a.metrics === 'object' && (a.metrics?.score ?? 100) < 60) && (
           <div className="flex items-center gap-2 p-2 bg-red-50 border-2 border-red-600 rounded">
             <AlertTriangle className="h-4 w-4 text-red-600" />
             <span className="text-xs font-bold text-red-600">

@@ -3,82 +3,54 @@
  * Centraliza o acesso aos agentes de otimização
  */
 
-export { performanceAgent, type PerformanceMetrics } from './performance-agent'
-export { securityAgent, type SecurityMetrics, type SecurityRule } from './security-agent'
-export { testingAgent, type TestCase, type TestResult, type TestSuite, type TestSummary } from './testing-agent'
-export { documentationAgent, type ComponentDoc, type APIDoc, type DocumentationConfig } from './documentation-agent'
+import { performanceAgent, type PerformanceMetrics } from './performance-agent'
+import { securityAgent, type SecurityMetrics, type SecurityRule } from './security-agent'
+import { testingAgent, type TestCase, type TestResult, type TestSuite, type TestSummary } from './testing-agent'
+import { documentationAgent, type ComponentDoc, type APIDoc, type DocumentationConfig } from './documentation-agent'
+import { predictiveAgent } from './predictive-agent'
+import { financialAgent } from './financial-agent'
+
+export { performanceAgent, type PerformanceMetrics }
+export { securityAgent, type SecurityMetrics, type SecurityRule }
+export { testingAgent, type TestCase, type TestResult, type TestSuite, type TestSummary }
+export { documentationAgent, type ComponentDoc, type APIDoc, type DocumentationConfig }
+export { predictiveAgent }
+export { financialAgent }
 
 /**
  * Agent Manager - Coordena todos os agentes
  * Provê interface unificada para otimização do projeto
  */
 
+interface AgentMetrics {
+  score?: number
+  suggestions?: string[]
+  passRate?: number
+  [key: string]: any
+}
+
 interface AgentStatus {
   name: string
   active: boolean
   lastRun: Date | null
-  metrics: any
+  metrics: AgentMetrics | string | null
 }
 
 class AgentManager {
-  private agents: Map<string, any> = new Map()
+  private agents: Map<string, unknown> = new Map()
   private status: Map<string, AgentStatus> = new Map()
 
   constructor() {
-    // Inicializar agentes de forma síncrona para evitar problemas
-    this.initializeAgentsSync()
+    this.initializeAgents()
   }
 
-  private initializeAgentsSync() {
-    // Importar e registrar todos os agentes de forma síncrona
-    try {
-      // Import direto para compatibilidade no browser
-      const { performanceAgent } = require('./performance-agent')
-      this.agents.set('performance', performanceAgent)
-      console.log('Performance agent loaded successfully')
-    } catch (error) {
-      console.error('Failed to load performance agent:', error)
-      // Criar agente fallback
-      this.agents.set('performance', {
-        analyzePerformance: () => ({ suggestions: ['Performance agent not available'], metrics: {} })
-      })
-    }
-
-    try {
-      const { securityAgent } = require('./security-agent')
-      this.agents.set('security', securityAgent)
-      console.log('Security agent loaded successfully')
-    } catch (error) {
-      console.error('Failed to load security agent:', error)
-      // Criar agente fallback
-      this.agents.set('security', {
-        analyzeSecurity: () => ({ suggestions: ['Security agent not available'], metrics: {} })
-      })
-    }
-
-    try {
-      const { testingAgent } = require('./testing-agent')
-      this.agents.set('testing', testingAgent)
-      console.log('Testing agent loaded successfully')
-    } catch (error) {
-      console.error('Failed to load testing agent:', error)
-      // Criar agente fallback
-      this.agents.set('testing', {
-        runAllTests: () => ({ results: [], summary: { passed: 0, failed: 0 } })
-      })
-    }
-
-    try {
-      const { documentationAgent } = require('./documentation-agent')
-      this.agents.set('documentation', documentationAgent)
-      console.log('Documentation agent loaded successfully')
-    } catch (error) {
-      console.error('Failed to load documentation agent:', error)
-      // Criar agente fallback
-      this.agents.set('documentation', {
-        generateFullDocumentation: () => '# Garage Ninja Documentation\n\nGenerated documentation placeholder.'
-      })
-    }
+  private initializeAgents() {
+    this.agents.set('performance', performanceAgent)
+    this.agents.set('security', securityAgent)
+    this.agents.set('testing', testingAgent)
+    this.agents.set('documentation', documentationAgent)
+    this.agents.set('predictive', predictiveAgent)
+    this.agents.set('financial', financialAgent)
 
     // Inicializar status
     for (const [name] of this.agents) {
@@ -93,65 +65,65 @@ class AgentManager {
 
   // Executar análise completa do projeto
   async runFullAnalysis(): Promise<{
-    performance: any
-    security: any
-    testing: any
-    documentation: any
+    performance: unknown
+    security: unknown
+    testing: unknown
+    documentation: unknown
   }> {
-    const results: any = {}
+    const results: Record<string, unknown> = {}
 
     // Performance Analysis
     try {
-      const performanceAgent = this.agents.get('performance')
-      if (performanceAgent && performanceAgent.analyzePerformance) {
-        results.performance = performanceAgent.analyzePerformance()
-        this.updateStatus('performance', true, results.performance)
+      const pAgent = this.agents.get('performance') as typeof performanceAgent
+      if (pAgent && pAgent.analyzePerformance) {
+        results['performance'] = pAgent.analyzePerformance()
+        this.updateStatus('performance', true, results['performance'] as Record<string, unknown>)
       } else {
         throw new Error('Performance agent not available or missing analyzePerformance method')
       }
     } catch (error) {
       console.error('Performance analysis failed:', error)
       const errorMessage = error instanceof Error ? error.message : String(error)
-      results.performance = { error: errorMessage, suggestions: ['Performance agent unavailable'] }
+      results['performance'] = { error: errorMessage, suggestions: ['Performance agent unavailable'] }
     }
 
     // Security Analysis
     try {
-      const securityAgent = this.agents.get('security')
-      if (securityAgent && securityAgent.analyzeSecurity) {
-        results.security = securityAgent.analyzeSecurity()
-        this.updateStatus('security', true, results.security)
+      const sAgent = this.agents.get('security') as typeof securityAgent
+      if (sAgent && sAgent.analyzeSecurity) {
+        results['security'] = sAgent.analyzeSecurity()
+        this.updateStatus('security', true, results['security'] as Record<string, unknown>)
       } else {
         throw new Error('Security agent not available or missing analyzeSecurity method')
       }
     } catch (error) {
       console.error('Security analysis failed:', error)
       const errorMessage = error instanceof Error ? error.message : String(error)
-      results.security = { error: errorMessage, suggestions: ['Security agent unavailable'] }
+      results['security'] = { error: errorMessage, suggestions: ['Security agent unavailable'] }
     }
 
     // Testing Analysis
     try {
-      const testingAgent = this.agents.get('testing')
-      if (testingAgent && testingAgent.runAllTests) {
-        const testResults = testingAgent.runAllTests()
-        results.testing = testResults
-        this.updateStatus('testing', true, testResults.summary)
+      const tAgent = this.agents.get('testing') as typeof testingAgent
+      if (tAgent && tAgent.runAllTests) {
+        const testResults = await tAgent.runAllTests()
+        results['testing'] = testResults
+        this.updateStatus('testing', true, testResults.summary as unknown as Record<string, unknown>)
       } else {
         throw new Error('Testing agent not available or missing runAllTests method')
       }
     } catch (error) {
       console.error('Testing analysis failed:', error)
       const errorMessage = error instanceof Error ? error.message : String(error)
-      results.testing = { error: errorMessage, suggestions: ['Testing agent unavailable'] }
+      results['testing'] = { error: errorMessage, suggestions: ['Testing agent unavailable'] }
     }
 
     // Documentation Analysis
     try {
-      const documentationAgent = this.agents.get('documentation')
-      if (documentationAgent && documentationAgent.generateFullDocumentation) {
-        const docs = documentationAgent.generateFullDocumentation([], [])
-        results.documentation = { components: [], apis: [], documentation: docs }
+      const docAgent = this.agents.get('documentation') as typeof documentationAgent
+      if (docAgent && docAgent.generateFullDocumentation) {
+        const docs = docAgent.generateFullDocumentation([], [])
+        results['documentation'] = { components: [], apis: [], documentation: docs }
         this.updateStatus('documentation', true, docs)
       } else {
         throw new Error('Documentation agent not available or missing generateFullDocumentation method')
@@ -159,10 +131,15 @@ class AgentManager {
     } catch (error) {
       console.error('Documentation analysis failed:', error)
       const errorMessage = error instanceof Error ? error.message : String(error)
-      results.documentation = { error: errorMessage, suggestions: ['Documentation agent unavailable'] }
+      results['documentation'] = { error: errorMessage, suggestions: ['Documentation agent unavailable'] }
     }
 
-    return results
+    return results as {
+      performance: unknown
+      security: unknown
+      testing: unknown
+      documentation: unknown
+    }
   }
 
   // Gerar documentação de componentes principais
@@ -202,7 +179,7 @@ class AgentManager {
   }
 
   // Atualizar status do agente
-  private updateStatus(agentName: string, active: boolean, metrics: any) {
+  private updateStatus(agentName: string, active: boolean, metrics: Record<string, unknown> | string | null) {
     const status = this.status.get(agentName)!
     status.active = active
     status.lastRun = new Date()
@@ -215,7 +192,7 @@ class AgentManager {
   }
 
   // Executar agente específico
-  async runAgent(agentName: string): Promise<any> {
+  async runAgent(agentName: string): Promise<unknown> {
     const agent = this.agents.get(agentName)
     if (!agent) {
       throw new Error(`Agent ${agentName} not found`)
@@ -225,24 +202,32 @@ class AgentManager {
       let result
       switch (agentName) {
         case 'performance':
-          result = agent.analyzePerformance()
+          result = (agent as typeof performanceAgent).analyzePerformance()
           break
         case 'security':
-          result = agent.analyzeSecurity()
+          result = (agent as typeof securityAgent).analyzeSecurity()
           break
         case 'testing':
-          result = await agent.runAllTests()
+          result = await (agent as typeof testingAgent).runAllTests()
           break
         case 'documentation':
-          const components = this.generateComponentDocs()
-          const apis = this.generateAPIDocs()
-          result = { components, apis }
+          result = { 
+            components: this.generateComponentDocs(), 
+            apis: this.generateAPIDocs() 
+          }
+          break
+        case 'predictive':
+          // Em uso real, passaria dados dinâmicos
+          result = (agent as typeof predictiveAgent).analyze([], 0)
+          break
+        case 'financial':
+          result = (agent as typeof financialAgent).analyze([], 0)
           break
         default:
           throw new Error(`Unknown agent: ${agentName}`)
       }
 
-      this.updateStatus(agentName, true, result)
+      this.updateStatus(agentName, true, result as Record<string, unknown>)
       return result
     } catch (error) {
       console.error(`Agent ${agentName} failed:`, error)
@@ -262,16 +247,19 @@ class AgentManager {
       report += `- Status: ${agent.active ? '✅ Active' : '❌ Inactive'}\n`
       report += `- Last Run: ${agent.lastRun ? agent.lastRun.toISOString() : 'Never'}\n`
       
-      if (agent.metrics) {
-        if (agent.metrics.score !== undefined) {
-          report += `- Score: ${agent.metrics.score}/100\n`
+      if (agent.metrics && typeof agent.metrics === 'object') {
+        const metrics = agent.metrics as AgentMetrics
+        if (metrics.score !== undefined) {
+          report += `- Score: ${metrics.score}/100\n`
         }
-        if (agent.metrics.suggestions) {
-          report += `- Suggestions: ${agent.metrics.suggestions.length}\n`
+        if (metrics.suggestions) {
+          report += `- Suggestions: ${metrics.suggestions.length}\n`
         }
-        if (agent.metrics.passRate !== undefined) {
-          report += `- Pass Rate: ${agent.metrics.passRate.toFixed(1)}%\n`
+        if (metrics.passRate !== undefined) {
+          report += `- Pass Rate: ${metrics.passRate.toFixed(1)}%\n`
         }
+      } else if (typeof agent.metrics === 'string') {
+        report += `- Metrics: ${agent.metrics}\n`
       }
       
       report += '\n'
@@ -282,9 +270,10 @@ class AgentManager {
 
   // Limpar recursos
   cleanup() {
-    for (const [name, agent] of this.agents) {
-      if (agent.cleanup) {
-        agent.cleanup()
+    for (const [_, agent] of this.agents) {
+      const a = agent as { cleanup?: () => void }
+      if (a.cleanup) {
+        a.cleanup()
       }
     }
     this.agents.clear()

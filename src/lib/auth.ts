@@ -9,6 +9,7 @@ export interface AuthUser {
   email: string
   name: string
   createdAt: Date
+  permissions?: string[]
 }
 
 export interface LoginCredentials {
@@ -44,20 +45,17 @@ export function generateToken(user: AuthUser): string {
 
 export function verifyToken(token: string): AuthUser | null {
   try {
-    console.log('🔍 [JWT] Verificando token:', token.substring(0, 50) + '...')
-    
-    // Se o token for um JSON (bug atual), parse primeiro
     let actualToken = token
     if (token.startsWith('{')) {
-      console.log('🔍 [JWT] Token parece ser JSON, fazendo parse...')
-      const parsed = JSON.parse(token)
-      console.log('🔍 [JWT] Token parseado, mas não é JWT válido')
-      return null
+      try {
+        const parsed = JSON.parse(token)
+        actualToken = parsed.token || token
+      } catch {
+        return null
+      }
     }
     
-    const decoded = jwt.verify(actualToken, JWT_SECRET) as AuthUser
-    console.log('✅ [JWT] Token válido:', decoded.email)
-    return decoded
+    return jwt.verify(actualToken, JWT_SECRET) as AuthUser
   } catch (error) {
     console.error('❌ [JWT] Erro na verificação:', error)
     return null
@@ -136,7 +134,7 @@ export async function authenticateUser(credentials: LoginCredentials): Promise<A
     }
     
     // Return user without password
-    const { password: _, ...userWithoutPassword } = user
+    const { password: _password, ...userWithoutPassword } = user
     console.log('✅ [AUTH] Autenticação bem-sucedida para:', userWithoutPassword.email)
     return userWithoutPassword
   } catch (error) {

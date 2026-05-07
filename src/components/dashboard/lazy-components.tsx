@@ -5,8 +5,7 @@
 
 import { lazy, Suspense } from 'react'
 import { Loading } from '@/components/ui/loading'
-import { ComponentProps } from 'react'
-import { PredictiveInsight, MaintenanceLogSummary } from '@/types'
+import { PredictiveInsight, MaintenanceLogSummary, UsagePattern, SmartAlert } from '@/types'
 
 // Lazy loading para componentes pesados
 export const LazyExpenseChart = lazy(() => 
@@ -22,19 +21,19 @@ export const LazyAchievements = lazy(() =>
 )
 
 export const LazyMaintenanceForecast = lazy(() => 
-  import('@/components/dashboard').then(module => ({ 
+  import('@/components/dashboard/maintenance-forecast').then(module => ({ 
     default: module.MaintenanceForecast 
   }))
 )
 
 export const LazyCostAnalysis = lazy(() => 
-  import('@/components/dashboard').then(module => ({ 
+  import('@/components/dashboard/cost-analysis').then(module => ({ 
     default: module.CostAnalysis 
   }))
 )
 
 export const LazySmartAlerts = lazy(() => 
-  import('@/components/dashboard').then(module => ({ 
+  import('@/components/dashboard/smart-alerts').then(module => ({ 
     default: module.SmartAlerts 
   }))
 )
@@ -45,13 +44,9 @@ interface ExpenseChartProps {
 }
 
 interface AchievementsProps {
-  achievements?: Array<{
-    id: string
-    name: string
-    description: string
-    icon: string
-    unlockedAt?: Date
-  }>
+  maintenanceLogs: MaintenanceLogSummary[]
+  totalSpent: number
+  currentKm: number
 }
 
 interface MaintenanceForecastProps {
@@ -60,23 +55,21 @@ interface MaintenanceForecastProps {
 }
 
 interface CostAnalysisProps {
-  expenses?: Array<{
-    id: string
-    amount: number
-    category: string
-    date: Date
-    description: string
-  }>
+  usagePattern: UsagePattern
+  projectedCosts: {
+    next30Days: number
+    next90Days: number
+    next6Months: number
+  }
 }
 
 interface SmartAlertsProps {
-  alerts?: Array<{
-    id: string
-    type: 'warning' | 'error' | 'info' | 'success'
-    title: string
-    message: string
-    timestamp: Date
-  }>
+  alerts: SmartAlert[]
+  unreadCount: number
+  criticalCount: number
+  onMarkAsRead: (id: string) => void
+  onMarkAllAsRead: () => void
+  onClearAlerts: () => void
 }
 
 // Wrapper com Suspense para lazy components

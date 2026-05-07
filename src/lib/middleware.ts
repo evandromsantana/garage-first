@@ -35,7 +35,7 @@ export function middleware(request: NextRequest) {
   if (token) {
     try {
       user = verifyToken(token)
-    } catch (error) {
+    } catch (_error) {
       // Token inválido, continuar sem usuário
     }
   }

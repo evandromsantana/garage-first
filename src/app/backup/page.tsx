@@ -2,8 +2,7 @@ import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, Cloud, Download, Upload, Shield, Clock, CheckCircle, AlertCircle } from "lucide-react"
-import { loadOrCreateVehicle } from "@/app/actions/vehicle"
-import { getVehicleWithData } from "@/app/actions"
+import { loadOrCreateVehicle, getVehicleWithData } from "@/app/actions"
 import { requireAuth } from "@/lib/auth-server"
 
 export default async function BackupPage() {

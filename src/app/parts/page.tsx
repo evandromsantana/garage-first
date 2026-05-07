@@ -1,12 +1,11 @@
-import Link from "next/link"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Wrench, Package, List } from "lucide-react"
-import { PageHeader } from "@/components/page-header"
 import { getAllExpenses } from "@/app/actions"
+import { PageHeader } from "@/components/page-header"
+import { Badge } from "@/components/ui/badge"
+import { Card, CardContent } from "@/components/ui/card"
 import { requireAuth } from "@/lib/auth-server"
-import { ProjectExpense } from "@/types"
 import { formatCurrency } from "@/lib/utils"
+import { List, Package, Wrench } from "lucide-react"
+import { PartsClientActions } from "./parts-client"
 
 export default async function PartsPage() {
   const user = await requireAuth()
@@ -37,6 +36,8 @@ export default async function PartsPage() {
             </CardContent>
           </Card>
         </div>
+
+        <PartsClientActions />
 
         <div className="space-y-4">
           <h2 className="text-xl font-black uppercase border-b-4 border-foreground pb-2 flex items-center gap-2 mt-8">

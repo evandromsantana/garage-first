@@ -1,153 +1,130 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { createMaintenanceLog } from "@/app/actions"
+import { DashboardHeader } from "@/components/dashboard/header"
+import { InventoryAlertWidget } from "@/components/dashboard/inventory-alert-widget"
+import { LazyMaintenanceForecastWrapper } from "@/components/dashboard/lazy-components"
+import { DashboardMetrics } from "@/components/dashboard/metrics"
+import { OBD2Widget } from "@/components/dashboard/obd2-widget"
+import { PendingTasks } from "@/components/dashboard/pending-tasks"
+import { QuickActions } from "@/components/dashboard/quick-actions"
+import { RecentHistory } from "@/components/dashboard/recent-history"
+import { SmartDiagnosis } from "@/components/dashboard/smart-diagnosis"
+import { VehicleSkeleton } from "@/components/dashboard/vehicle-skeleton"
 import { FAB } from "@/components/fab"
 import { GloveMode } from "@/components/glove-mode"
-import { ExpenseChart } from "@/components/expense-chart"
-import { DashboardHeader } from "@/components/dashboard/header"
-import Link from "next/link"
-import { createMaintenanceLog } from "@/app/actions"
-import { toast } from "sonner"
-import { DashboardAlerts } from "@/components/dashboard/alerts"
-import { DashboardMetrics } from "@/components/dashboard/metrics"
-import { PendingTasks } from "@/components/dashboard/pending-tasks"
-import { RecentHistory } from "@/components/dashboard/recent-history"
-import { AgentsPanel } from "@/components/dashboard/agents-panel"
-import { LazyExpenseChartWrapper, LazyAchievementsWrapper, LazyMaintenanceForecastWrapper, LazyCostAnalysisWrapper, LazySmartAlertsWrapper } from "@/components/dashboard/lazy-components"
-import { HealthScore } from "@/components/dashboard"
-import { useMemoizedMetrics } from "@/hooks/use-memoized-data"
-import { Achievements } from "@/components/achievements"
-import { VehicleSummary, PendingTask } from "@/types"
+import { VoiceAgent } from "@/components/voice-agent"
+import { usePredictiveMaintenance, useSmartAlerts } from "@/hooks"
 import { MAINTENANCE_TYPE_MAP } from "@/lib/constants/maintenance"
-import { usePredictiveMaintenance, useSmartAlerts, useVehicleMetrics } from "@/hooks"
+import { haptics } from "@/lib/haptics"
+import { InventoryItem, PendingTask, TechnicalSpec, VehicleSummary } from "@/types"
+import { Plus, ShieldCheck } from "lucide-react"
+import { useState, useEffect } from "react"
+import { toast } from "sonner"
 
 interface DashboardClientProps {
   vehicle: VehicleSummary
   pending: PendingTask[]
+  inventory: InventoryItem[]
+  specs: TechnicalSpec[]
 }
 
-export function DashboardClient({ vehicle, pending }: DashboardClientProps) {
-  const [gloveMode, setGloveMode] = useState(false)
+export default function DashboardClient({ vehicle, pending, inventory, specs }: DashboardClientProps) {
+  const [isGloveModeOpen, setIsGloveModeOpen] = useState(false)
+  const predictiveData = usePredictiveMaintenance(vehicle?.maintenanceLogs || [], vehicle?.currentKm || 0)
+  const { alerts, unreadCount, criticalCount, markAsRead, markAllAsRead, clearAlerts } = useSmartAlerts(vehicle, predictiveData.insights)
 
-  // Memoized metrics for performance
-  const memoizedMetrics = useMemoizedMetrics(vehicle)
-  
-  // Advanced hooks for predictive analytics
-  const vehicleMetrics = useVehicleMetrics(vehicle)
-  const predictiveData = usePredictiveMaintenance(vehicle)
-  const smartAlerts = useSmartAlerts(vehicle)
-
-  // Generate alerts from insights when component mounts
   useEffect(() => {
-    const alerts = smartAlerts.generateAlertsFromInsights(
-      predictiveData.insights,
-      vehicle.currentKm
-    )
-    alerts.forEach(alert => smartAlerts.addAlert(alert))
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [predictiveData.insights, vehicle.currentKm]) // Intentionally exclude smartAlerts to prevent loop
+    if (vehicle.maintenanceLogs.length === 0) {
+      toast.success("Bem-vindo, Ninja! Veículo pronto para auditoria técnica.", {
+        icon: "🏍️",
+        duration: 5000,
+        id: "welcome-ninja" // Add ID to prevent duplicates
+      })
+    }
+  }, [vehicle.maintenanceLogs.length])
 
-  const handleQuickLog = async (actionName: string) => {
+  if (!vehicle) return null
+
+  const handleQuickLog = async (type: string) => {
     try {
       await createMaintenanceLog({
         vehicleId: vehicle.id,
-        type: MAINTENANCE_TYPE_MAP[actionName] ?? "PREVENTIVE",
-        description: actionName,
+        description: type,
         kmAtService: vehicle.currentKm,
+        type: (MAINTENANCE_TYPE_MAP[type as keyof typeof MAINTENANCE_TYPE_MAP] || 'PREVENTIVE') as "PREVENTIVE" | "CORRECTIVE" | "UPGRADE",
+        cost: 0,
       })
-      toast.success(`${actionName} registrado!`)
-    } catch {
-      toast.error("Erro ao registrar")
+      toast.success(`${type} registrado!`)
+    } catch (error) {
+      toast.error("Erro ao registrar manutenção rápida")
     }
   }
 
-
-  if (gloveMode) {
-    return (
-      <GloveMode 
-        vehicleId={vehicle.id} 
-        onClose={() => setGloveMode(false)}
-        onQuickLog={handleQuickLog}
-      />
-    )
-  }
-
   return (
-    <div className="min-h-screen bg-background pb-24 selection:bg-foreground/10 font-mono">
-      <DashboardHeader vehicle={vehicle} />
+    <div className="kindle-page space-y-8">
+      <DashboardHeader 
+        vehicleName={vehicle.model}
+        alerts={alerts}
+        unreadCount={unreadCount}
+        criticalCount={criticalCount}
+        onMarkAsRead={markAsRead}
+        onMarkAllAsRead={markAllAsRead}
+        onClearAlerts={clearAlerts}
+      />
 
-      <main className="p-4 space-y-5">
-        {/* Smart Alerts - Top Priority */}
-        <LazySmartAlertsWrapper
-          alerts={smartAlerts.alerts}
-          unreadCount={smartAlerts.unreadCount}
-          criticalCount={smartAlerts.criticalCount}
-          onMarkAsRead={smartAlerts.markAsRead}
-          onMarkAllAsRead={smartAlerts.markAllAsRead}
-          onClearAlerts={smartAlerts.clearAlerts}
-        />
-
-        {/* Key Metrics Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-          <HealthScore healthScore={predictiveData.healthScore} />
+      <main className="max-w-4xl mx-auto space-y-10 pb-20">
+        
+        {/* Core Vehicle Stats & Inspection */}
+        <section className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <DashboardMetrics vehicle={vehicle} />
-        </div>
+          <VehicleSkeleton health={predictiveData.healthScore} />
+        </section>
 
-        {/* Predictive Analytics Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-          <LazyMaintenanceForecastWrapper 
-            insights={predictiveData.insights}
-            nextMaintenanceDate={predictiveData.nextMaintenanceDate}
-          />
-          <LazyCostAnalysisWrapper 
-            usagePattern={predictiveData.usagePattern}
-            projectedCosts={predictiveData.projectedCosts}
-          />
-        </div>
+        {/* Quick Actions Grid */}
+        <QuickActions />
 
-        {/* AI Agents Panel */}
-        <AgentsPanel />
+        {/* Predictive Intelligence */}
+        <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
+           <div className="space-y-4">
+             <div className="flex items-center gap-2 border-b-2 border-foreground pb-2">
+               <ShieldCheck className="h-4 w-4" />
+               <h3 className="text-xs font-black uppercase tracking-widest">Inteligência Preditiva</h3>
+             </div>
+             <SmartDiagnosis />
+             <InventoryAlertWidget items={inventory} />
+             <LazyMaintenanceForecastWrapper insights={predictiveData.insights} nextMaintenanceDate={predictiveData.nextMaintenanceDate} />
+           </div>
+           
+           <div className="space-y-4">
+             <div className="flex items-center gap-2 border-b-2 border-foreground pb-2">
+               <Plus className="h-4 w-4" />
+               <h3 className="text-xs font-black uppercase tracking-widest">Diagnóstico Externo</h3>
+             </div>
+             <OBD2Widget />
+           </div>
+        </section>
 
-        {/* Traditional Components */}
-        <DashboardAlerts vehicle={vehicle} />
-        <PendingTasks pending={pending} />
+        {/* History Archive */}
         <RecentHistory logs={vehicle.maintenanceLogs} />
 
-        {/* Financial Analysis */}
-        <LazyExpenseChartWrapper logs={vehicle.maintenanceLogs} />
+        {/* Pending Logs / Tasks */}
+        {pending.length > 0 && <PendingTasks pending={pending} />}
 
-        {/* Gamification - Achievements */}
-        <LazyAchievementsWrapper 
-          maintenanceLogs={vehicle.maintenanceLogs}
-          totalSpent={memoizedMetrics.totalSpent}
-          currentKm={vehicle.currentKm}
-        />
-
-        {/* Recommendations */}
-        {predictiveData.recommendations.length > 0 && (
-          <Card className="bg-muted border-4 border-dashed border-foreground rounded-none shadow-none">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-black uppercase">
-                Recomendações Inteligentes
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2">
-                {predictiveData.recommendations.map((rec, index) => (
-                  <li key={index} className="flex items-start gap-2 text-sm">
-                    <span className="text-foreground font-bold">•</span>
-                    <span>{rec}</span>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-        )}
       </main>
 
-      <FAB />
+      <FAB onClick={() => { haptics.heavy(); setIsGloveModeOpen(true); }} />
+
+      {isGloveModeOpen && (
+        <GloveMode 
+          vehicleId={vehicle.id} 
+          specs={specs}
+          onClose={() => setIsGloveModeOpen(false)}
+          onQuickLog={handleQuickLog}
+        />
+      )}
+      
+      <VoiceAgent />
     </div>
   )
 }

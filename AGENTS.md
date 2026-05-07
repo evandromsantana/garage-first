@@ -3,7 +3,7 @@
 
 - This is NOT the Next.js you know — v16 has breaking changes
 - Read the relevant guide in `node_modules/next/dist/docs/` before writing any code
-- Use Server Actions in `actions.ts` files — already configured in `src/app/actions.ts`
+- Use Server Actions in `actions.ts` files — located in `src/app/actions/`
 - Use `revalidatePath()` for cache invalidation after mutations
 - Images are unoptimized in `next.config.ts` — use standard `<img>` or Next.js Image component
 - App Router structure is in `src/app/` — follow existing route conventions

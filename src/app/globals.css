@@ -51,72 +51,46 @@
 
 :root {
   --background: oklch(0.96 0.01 80); /* Kindle Paper Warm */
-  --foreground: oklch(0.15 0 0); /* E-ink text */
-  --card: oklch(0.98 0.005 80); /* Card Paper */
-  --card-foreground: oklch(0.15 0 0);
+  --foreground: oklch(0.12 0 0); /* Near black for e-ink */
+  --card: oklch(0.98 0.005 80);
+  --card-foreground: oklch(0.12 0 0);
   --popover: oklch(0.98 0.005 80);
-  --popover-foreground: oklch(0.15 0 0);
-  --primary: oklch(0.2 0 0); /* Deep charcoal for main actions */
+  --popover-foreground: oklch(0.12 0 0);
+  --primary: oklch(0.12 0 0);
   --primary-foreground: oklch(0.96 0.01 80);
-  --secondary: oklch(0.9 0 0); /* Light grey */
-  --secondary-foreground: oklch(0.2 0 0);
-  --muted: oklch(0.92 0 0);
-  --muted-foreground: oklch(0.45 0 0);
+  --secondary: oklch(0.9 0 0);
+  --secondary-foreground: oklch(0.12 0 0);
+  --muted: oklch(0.94 0 0);
+  --muted-foreground: oklch(0.4 0 0);
   --accent: oklch(0.9 0 0);
-  --accent-foreground: oklch(0.2 0 0);
-  --destructive: oklch(0.35 0 0); /* Darker grey instead of red for e-ink */
-  --border: oklch(0.85 0 0); /* Sharp e-ink border */
-  --input: oklch(0.85 0 0);
-  --ring: oklch(0.3 0 0);
-  --chart-1: oklch(0.2 0 0); /* Black */
-  --chart-2: oklch(0.5 0 0); /* Mid Grey */
-  --chart-3: oklch(0.7 0 0); /* Light Grey */
-  --chart-4: oklch(0.35 0 0); 
-  --chart-5: oklch(0.6 0 0);
-  --radius: 0.15rem; /* Flat sharp edges like a reader */
-  --sidebar: oklch(0.96 0.01 80);
-  --sidebar-foreground: oklch(0.15 0 0);
-  --sidebar-primary: oklch(0.2 0 0);
-  --sidebar-primary-foreground: oklch(0.96 0.01 80);
-  --sidebar-accent: oklch(0.9 0 0);
-  --sidebar-accent-foreground: oklch(0.2 0 0);
-  --sidebar-border: oklch(0.85 0 0);
-  --sidebar-ring: oklch(0.3 0 0);
+  --accent-foreground: oklch(0.12 0 0);
+  --destructive: oklch(0.3 0 0);
+  --border: oklch(0.8 0 0);
+  --input: oklch(0.8 0 0);
+  --ring: oklch(0.2 0 0);
+  --radius: 0rem; /* Strictly sharp corners for brutalist kindle */
 }
 
-.dark {
-  --background: oklch(0.15 0 0); /* Kindle Dark Mode */
-  --foreground: oklch(0.92 0 0);
-  --card: oklch(0.18 0 0);
-  --card-foreground: oklch(0.92 0 0);
-  --popover: oklch(0.18 0 0);
-  --popover-foreground: oklch(0.92 0 0);
-  --primary: oklch(0.85 0 0); /* Light grey for contrast */
-  --primary-foreground: oklch(0.15 0 0);
-  --secondary: oklch(0.25 0 0);
-  --secondary-foreground: oklch(0.92 0 0);
-  --muted: oklch(0.25 0 0);
-  --muted-foreground: oklch(0.6 0 0);
-  --accent: oklch(0.25 0 0);
-  --accent-foreground: oklch(0.92 0 0);
-  --destructive: oklch(0.6 0 0); 
-  --border: oklch(0.3 0 0);
-  --input: oklch(0.3 0 0);
-  --ring: oklch(0.6 0 0);
-  --chart-1: oklch(0.85 0 0);
-  --chart-2: oklch(0.6 0 0);
-  --chart-3: oklch(0.4 0 0);
-  --chart-4: oklch(0.7 0 0);
-  --chart-5: oklch(0.5 0 0);
-  --radius: 0.15rem;
-  --sidebar: oklch(0.15 0 0);
-  --sidebar-foreground: oklch(0.92 0 0);
-  --sidebar-primary: oklch(0.85 0 0);
-  --sidebar-primary-foreground: oklch(0.15 0 0);
-  --sidebar-accent: oklch(0.25 0 0);
-  --sidebar-accent-foreground: oklch(0.92 0 0);
-  --sidebar-border: oklch(0.3 0 0);
-  --sidebar-ring: oklch(0.6 0 0);
+@layer components {
+  .kindle-page {
+    @apply bg-background text-foreground font-serif p-4 min-h-screen pb-24;
+  }
+  
+  .kindle-card {
+    @apply border-4 border-foreground bg-card shadow-none rounded-none p-4 transition-none;
+  }
+
+  .kindle-button {
+    @apply border-4 border-foreground bg-background text-foreground hover:bg-foreground hover:text-background font-black uppercase tracking-widest rounded-none p-4 transition-none active:translate-y-1;
+  }
+
+  .kindle-header {
+    @apply font-black uppercase tracking-tighter text-2xl border-b-4 border-foreground pb-2 mb-4;
+  }
+  
+  .kindle-text-content {
+    @apply font-serif leading-relaxed text-lg max-w-2xl mx-auto;
+  }
 }
 
 @layer base {
@@ -127,9 +101,26 @@
     @apply bg-background text-foreground font-serif;
     font-family: var(--font-merriweather), serif;
     line-height: 1.6;
-    letter-spacing: 0.01em;
+    letter-spacing: 0.015em;
   }
-  html {
-    @apply font-sans;
-  }
+}
+
+/* Glove Mode Overrides - Mantém o estilo Kindle mas aumenta o tamanho para uso com luvas */
+html.glove-mode {
+  --background: oklch(0.98 0 0); /* Ainda mais claro que o normal */
+  --foreground: oklch(0.05 0 0); /* Preto absoluto para contraste máximo */
+  --primary: oklch(0.05 0 0);
+  --primary-foreground: oklch(0.98 0 0);
+  --muted: oklch(0.9 0 0);
+  font-size: 1.25rem;
+}
+
+html.glove-mode body {
+  @apply font-mono;
+}
+
+html.glove-mode button, 
+html.glove-mode input, 
+html.glove-mode a {
+  @apply border-4 p-6 text-xl rounded-none shadow-[4px_4px_0_0_var(--foreground)] active:translate-y-1 active:shadow-none transition-none;
 }

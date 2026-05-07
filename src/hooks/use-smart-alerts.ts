@@ -15,14 +15,15 @@ interface UseSmartAlertsReturn {
   generateAlertsFromInsights: (insights: PredictiveInsight[], currentKm: number) => SmartAlert[]
 }
 
-export function useSmartAlerts(vehicle: VehicleSummary): UseSmartAlertsReturn {
-  const [alerts, setAlerts] = useState<SmartAlert[]>([])
+export function useSmartAlerts(
+  vehicle: VehicleSummary | undefined,
+  insights: PredictiveInsight[] = []
+): UseSmartAlertsReturn {
+  const [manualAlerts, setManualAlerts] = useState<SmartAlert[]>([])
 
-  const generateAlertsFromInsights = useCallback((
-    insights: PredictiveInsight[], 
-    currentKm: number
-  ): SmartAlert[] => {
+  const systemAlerts = useMemo(() => {
     const newAlerts: SmartAlert[] = []
+    const currentKm = vehicle?.currentKm || 0
 
     insights.forEach(insight => {
       const kmRemaining = insight.dueKm ? insight.dueKm - currentKm : 0
@@ -33,7 +34,7 @@ export function useSmartAlerts(vehicle: VehicleSummary): UseSmartAlertsReturn {
       // Maintenance due alerts
       if (kmRemaining <= 0) {
         newAlerts.push({
-          id: `maintenance-overdue-${insight.name}`,
+          id: `maintenance-overdue-${insight.name.toLowerCase().replace(/\s+/g, '-')}`,
           type: "maintenance_due",
           severity: insight.criticality === "critical" ? "critical" : 
                    insight.criticality === "high" ? "error" : "warning",
@@ -51,7 +52,7 @@ export function useSmartAlerts(vehicle: VehicleSummary): UseSmartAlertsReturn {
         })
       } else if (kmRemaining <= ALERT_THRESHOLD_KM) {
         newAlerts.push({
-          id: `maintenance-due-${insight.name}`,
+          id: `maintenance-due-${insight.name.toLowerCase().replace(/\s+/g, '-')}`,
           type: "maintenance_due",
           severity: insight.criticality === "critical" ? "error" : "warning",
           title: `${insight.name} em breve`,
@@ -71,7 +72,7 @@ export function useSmartAlerts(vehicle: VehicleSummary): UseSmartAlertsReturn {
       // High urgency alerts
       if (insight.urgencyScore >= 80) {
         newAlerts.push({
-          id: `urgency-${insight.name}`,
+          id: `urgency-${insight.name.toLowerCase().replace(/\s+/g, '-')}-${insight.urgencyScore}`,
           type: "performance",
           severity: "warning",
           title: `Alta Prioridade: ${insight.name}`,
@@ -86,7 +87,7 @@ export function useSmartAlerts(vehicle: VehicleSummary): UseSmartAlertsReturn {
     })
 
     // Cost spike detection
-    const recentMaintenances = vehicle.maintenanceLogs
+    const recentMaintenances = (vehicle?.maintenanceLogs || [])
       .filter(log => {
         const daysSince = (Date.now() - new Date(log.createdAt).getTime()) / (1000 * 60 * 60 * 24)
         return daysSince <= 30
@@ -116,45 +117,16 @@ export function useSmartAlerts(vehicle: VehicleSummary): UseSmartAlertsReturn {
       }
     }
 
-    // Seasonal alerts
-    const currentMonth = new Date().getMonth()
-    if (currentMonth >= 10 || currentMonth <= 2) {
-      newAlerts.push({
-        id: "seasonal-summer",
-        type: "seasonal",
-        severity: "info",
-        title: "Alerta Sazonal - Verão",
-        message: "Temperaturas altas podem afetar desempenho",
-        actionItems: [
-          "Verificar sistema de arrefecimento",
-          "Inspecionar nível de líquidos",
-          "Testar funcionamento em alta temperatura"
-        ],
-        createdAt: new Date(),
-        isRead: false
-      })
-    } else if (currentMonth >= 6 && currentMonth <= 8) {
-      newAlerts.push({
-        id: "seasonal-winter",
-        type: "seasonal",
-        severity: "info",
-        title: "Alerta Sazonal - Inverno",
-        message: "Condições de chuva exigem atenção especial",
-        actionItems: [
-          "Verificar profundidade dos sulcos dos pneus",
-          "Testar eficiência dos freios",
-          "Inspecionar vedação contra água"
-        ],
-        createdAt: new Date(),
-        isRead: false
-      })
-    }
+    return newAlerts
+  }, [insights, vehicle?.currentKm, vehicle?.maintenanceLogs])
 
-    return newAlerts.sort((a, b) => {
+  const alerts = useMemo(() => 
+    [...manualAlerts, ...systemAlerts].sort((a, b) => {
       const severityOrder = { critical: 4, error: 3, warning: 2, info: 1 }
       return severityOrder[b.severity] - severityOrder[a.severity]
-    })
-  }, [vehicle.maintenanceLogs])
+    }), 
+    [manualAlerts, systemAlerts]
+  )
 
   const addAlert = useCallback((alert: Omit<SmartAlert, "id" | "createdAt" | "isRead">) => {
     const newAlert: SmartAlert = {
@@ -163,21 +135,21 @@ export function useSmartAlerts(vehicle: VehicleSummary): UseSmartAlertsReturn {
       createdAt: new Date(),
       isRead: false
     }
-    setAlerts(prev => [newAlert, ...prev])
+    setManualAlerts(prev => [newAlert, ...prev])
   }, [])
 
   const markAsRead = useCallback((id: string) => {
-    setAlerts(prev => prev.map(alert => 
+    setManualAlerts(prev => prev.map(alert => 
       alert.id === id ? { ...alert, isRead: true } : alert
     ))
   }, [])
 
   const markAllAsRead = useCallback(() => {
-    setAlerts(prev => prev.map(alert => ({ ...alert, isRead: true })))
+    setManualAlerts(prev => prev.map(alert => ({ ...alert, isRead: true })))
   }, [])
 
   const clearAlerts = useCallback(() => {
-    setAlerts([])
+    setManualAlerts([])
   }, [])
 
   const unreadCount = useMemo(() => 
@@ -189,6 +161,8 @@ export function useSmartAlerts(vehicle: VehicleSummary): UseSmartAlertsReturn {
     alerts.filter(alert => alert.severity === "critical" || alert.severity === "error").length,
     [alerts]
   )
+
+  const generateAlertsFromInsights = useCallback(() => [], []) // Deprecated but kept for compatibility
 
   return {
     alerts,
