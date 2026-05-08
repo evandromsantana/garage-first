@@ -12,6 +12,8 @@ export const vehicleSchema = z.object({
   engineNumber: z.string().nullish().transform(v => v ?? null),
   color: z.string().nullish().transform(v => v ?? null),
   uf: z.string().nullish().transform(v => v ?? null),
+  purchasePrice: z.coerce.number().nullish().transform(v => v ?? null),
+  currentMarketValue: z.coerce.number().nullish().transform(v => v ?? null),
 })
 
 export const maintenanceLogSchema = z.object({

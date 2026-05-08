@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Settings, FileText, Bot, Cloud, AlertTriangle, LogOut } from "lucide-react"
 import { PageHeader } from "@/components/page-header"
 import { getVehicleWithData, loadOrCreateVehicle, getTechnicalSpecs, logout } from "@/app/actions"
+import { getMaintenanceRules } from "@/app/actions/maintenance-rules"
 import { ExportData } from "@/components/export-data"
 import { cookies } from "next/headers"
 import { verifyToken } from "@/lib/auth"
@@ -11,6 +12,7 @@ import { redirect } from "next/navigation"
 import { AppPreferences } from "./app-preferences"
 import { VehicleSettingsForm } from "@/components/settings/vehicle-settings-form"
 import { TechnicalSpecsManager } from "@/components/settings/technical-specs-manager"
+import { MaintenanceRulesManager } from "@/components/settings/maintenance-rules-manager"
 
 export default async function SettingsPage() {
   const cookieStore = await cookies()
@@ -24,6 +26,7 @@ export default async function SettingsPage() {
   const vehicleBase = await loadOrCreateVehicle()
   const vehicle = await getVehicleWithData(vehicleBase.id)
   const specs = await getTechnicalSpecs(vehicleBase.id)
+  const rules = await getMaintenanceRules(vehicleBase.id)
 
   if (!vehicle) return <div>Veículo não encontrado</div>
 
@@ -74,6 +77,11 @@ export default async function SettingsPage() {
         {/* Technical Specs Section */}
         <section className="space-y-4 pt-4">
           <TechnicalSpecsManager vehicleId={vehicle.id} initialSpecs={specs} />
+        </section>
+
+        {/* Maintenance Rules Section */}
+        <section className="space-y-4 pt-4">
+          <MaintenanceRulesManager vehicleId={vehicle.id} initialRules={rules} />
         </section>
 
         {/* Export Section */}

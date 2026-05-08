@@ -14,18 +14,20 @@ export interface PredictiveMetrics {
 
 class PredictiveAgent {
   // Analisa os logs e KM atual para gerar métricas preditivas
-  analyze(logs: MaintenanceLogSummary[], currentKm: number): PredictiveMetrics {
+  analyze(logs: MaintenanceLogSummary[], currentKm: number, customRules?: any[]): PredictiveMetrics {
     const insights: PredictiveInsight[] = []
     let criticalIssues = 0
     
-    // Regras simplificadas para o Agente
-    const rules = [
-      { name: 'Óleo do Motor', interval: 5000, criticality: 'high' },
-      { name: 'Filtro de Óleo', interval: 5000, criticality: 'medium' },
-      { name: 'Fluido de Freio', interval: 10000, criticality: 'high' },
-      { name: 'Relação (Corrente/Pinhão)', interval: 20000, criticality: 'critical' },
-      { name: 'Pneus', interval: 15000, criticality: 'high' },
-    ]
+    // Usa regras customizadas se disponíveis, senão usa os padrões do sistema
+    const rules = customRules && customRules.length > 0 
+      ? customRules.map(r => ({ name: r.name, interval: r.intervalKm, criticality: r.criticality }))
+      : [
+          { name: 'Óleo do Motor', interval: 5000, criticality: 'high' },
+          { name: 'Filtro de Óleo', interval: 5000, criticality: 'medium' },
+          { name: 'Fluido de Freio', interval: 10000, criticality: 'high' },
+          { name: 'Relação (Corrente/Pinhão)', interval: 20000, criticality: 'critical' },
+          { name: 'Pneus', interval: 15000, criticality: 'high' },
+        ]
 
     rules.forEach(rule => {
       const lastService = logs

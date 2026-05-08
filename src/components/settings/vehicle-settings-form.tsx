@@ -24,6 +24,8 @@ interface VehicleSettingsFormProps {
     engineNumber: string | null
     color: string | null
     uf: string | null
+    purchasePrice: number | null
+    currentMarketValue: number | null
   }
 }
 
@@ -39,6 +41,8 @@ export function VehicleSettingsForm({ vehicle }: VehicleSettingsFormProps) {
   const [color, setColor] = useState(vehicle.color || "")
   const [uf, setUf] = useState(vehicle.uf || "")
   const [km, setKm] = useState(vehicle.currentKm)
+  const [purchasePrice, setPurchasePrice] = useState(vehicle.purchasePrice || 0)
+  const [marketValue, setMarketValue] = useState(vehicle.currentMarketValue || 0)
   const [loading, setLoading] = useState(false)
 
   const handleSave = async (e: React.FormEvent) => {
@@ -58,7 +62,9 @@ export function VehicleSettingsForm({ vehicle }: VehicleSettingsFormProps) {
         engineNumber,
         color,
         uf,
-        currentKm: Number(km)
+        currentKm: Number(km),
+        purchasePrice: Number(purchasePrice),
+        currentMarketValue: Number(marketValue)
       })
       toast.success("Configurações atualizadas")
       haptics.success()
@@ -173,6 +179,30 @@ export function VehicleSettingsForm({ vehicle }: VehicleSettingsFormProps) {
                 onChange={(e) => setKm(Number(e.target.value))}
                 className="border-4 border-foreground rounded-none h-20 font-black text-4xl focus-visible:ring-0" 
               />
+            </div>
+            
+            <div className="border-t-4 border-foreground pt-4 mt-4 sm:col-span-2">
+              <h4 className="text-xs font-black uppercase tracking-widest mb-4">Parâmetros Financeiros (Wealth Advisor)</h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-black uppercase tracking-widest">PREÇO DE COMPRA (R$)</Label>
+                  <Input 
+                    type="number"
+                    value={purchasePrice}
+                    onChange={(e) => setPurchasePrice(Number(e.target.value))}
+                    className="border-4 border-foreground rounded-none h-14 bg-background font-black text-sm focus-visible:ring-0" 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-black uppercase tracking-widest">VALOR DE MERCADO ATUAL (R$)</Label>
+                  <Input 
+                    type="number"
+                    value={marketValue}
+                    onChange={(e) => setMarketValue(Number(e.target.value))}
+                    className="border-4 border-foreground rounded-none h-14 bg-background font-black text-sm focus-visible:ring-0" 
+                  />
+                </div>
+              </div>
             </div>
           </div>
 

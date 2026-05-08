@@ -38,6 +38,8 @@ export interface CreateVehicleInput {
   color?: string
   uf?: string
   currentKm?: number
+  purchasePrice?: number
+  currentMarketValue?: number
 }
 
 export interface CreateMaintenanceInput {
@@ -86,9 +88,12 @@ export interface VehicleSummary {
   color: string | null
   uf: string | null
   currentKm: number
+  purchasePrice: number | null
+  currentMarketValue: number | null
   createdAt: Date
   updatedAt: Date
   maintenanceLogs: (MaintenanceLog & { expenses: ProjectExpense[] })[]
+  maintenanceRules?: any[]
 }
 
 export interface MaintenanceLogSummary {

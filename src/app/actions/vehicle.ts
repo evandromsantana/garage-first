@@ -24,9 +24,9 @@ export async function createVehicle(data: CreateVehicleInput) {
     
     const id = crypto.randomUUID()
     await prisma.$executeRawUnsafe(
-      `INSERT INTO Vehicle (id, ownerName, brand, model, year, currentKm, plate, renavam, chassis, engineNumber, color, uf, userId, createdAt, updatedAt) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, DATETIME('now'), DATETIME('now'))`,
-      id, validatedData.ownerName || null, validatedData.brand || null, validatedData.model, validatedData.year, validatedData.currentKm ?? 0, validatedData.plate || null, validatedData.renavam || null, validatedData.chassis || null, validatedData.engineNumber || null, validatedData.color || null, validatedData.uf || null, user.id
+      `INSERT INTO Vehicle (id, ownerName, brand, model, year, currentKm, plate, renavam, chassis, engineNumber, color, uf, purchasePrice, currentMarketValue, userId, createdAt, updatedAt) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, DATETIME('now'), DATETIME('now'))`,
+      id, validatedData.ownerName || null, validatedData.brand || null, validatedData.model, validatedData.year, validatedData.currentKm ?? 0, validatedData.plate || null, validatedData.renavam || null, validatedData.chassis || null, validatedData.engineNumber || null, validatedData.color || null, validatedData.uf || null, validatedData.purchasePrice || null, validatedData.currentMarketValue || null, user.id
     )
     
     return { id, ...data, userId: user.id }
@@ -44,7 +44,9 @@ export async function updateVehicle(vehicleId: string, data: {
   chassis?: string,
   engineNumber?: string,
   color?: string,
-  uf?: string
+  uf?: string,
+  purchasePrice?: number,
+  currentMarketValue?: number
 }) {
   try {
     const updateData = Object.fromEntries(
@@ -76,6 +78,8 @@ export async function updateVehicle(vehicleId: string, data: {
         engineNumber = ?,
         color = ?, 
         uf = ?,
+        purchasePrice = ?,
+        currentMarketValue = ?,
         updatedAt = DATETIME('now') 
        WHERE id = ?`,
       data.ownerName || null,
@@ -89,6 +93,8 @@ export async function updateVehicle(vehicleId: string, data: {
       data.engineNumber || null,
       data.color || null,
       data.uf || null,
+      data.purchasePrice || null,
+      data.currentMarketValue || null,
       vehicleId
     )
     

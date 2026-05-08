@@ -15,6 +15,7 @@ export default async function AnalyticsPage() {
   const vehicle = await prisma.vehicle.findFirst({
     where: { userId: user.id },
     include: {
+      maintenanceRules: true,
       maintenanceLogs: {
         include: {
           expenses: true,

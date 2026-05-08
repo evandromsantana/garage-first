@@ -9,6 +9,7 @@ import { testingAgent, type TestCase, type TestResult, type TestSuite, type Test
 import { documentationAgent, type ComponentDoc, type APIDoc, type DocumentationConfig } from './documentation-agent'
 import { predictiveAgent } from './predictive-agent'
 import { financialAgent } from './financial-agent'
+import { wealthAgent } from './wealth-agent'
 
 export { performanceAgent, type PerformanceMetrics }
 export { securityAgent, type SecurityMetrics, type SecurityRule }
@@ -16,6 +17,7 @@ export { testingAgent, type TestCase, type TestResult, type TestSuite, type Test
 export { documentationAgent, type ComponentDoc, type APIDoc, type DocumentationConfig }
 export { predictiveAgent }
 export { financialAgent }
+export { wealthAgent }
 
 /**
  * Agent Manager - Coordena todos os agentes
@@ -51,6 +53,7 @@ class AgentManager {
     this.agents.set('documentation', documentationAgent)
     this.agents.set('predictive', predictiveAgent)
     this.agents.set('financial', financialAgent)
+    this.agents.set('wealth', wealthAgent)
 
     // Inicializar status
     for (const [name] of this.agents) {
@@ -64,11 +67,20 @@ class AgentManager {
   }
 
   // Executar análise completa do projeto
-  async runFullAnalysis(): Promise<{
+  async runFullAnalysis(data?: { 
+    logs?: any[], 
+    currentKm?: number, 
+    rules?: any[],
+    purchasePrice?: number,
+    marketValue?: number
+  }): Promise<{
     performance: unknown
     security: unknown
     testing: unknown
     documentation: unknown
+    predictive: unknown
+    financial: unknown
+    wealth: unknown
   }> {
     const results: Record<string, unknown> = {}
 
@@ -78,13 +90,9 @@ class AgentManager {
       if (pAgent && pAgent.analyzePerformance) {
         results['performance'] = pAgent.analyzePerformance()
         this.updateStatus('performance', true, results['performance'] as Record<string, unknown>)
-      } else {
-        throw new Error('Performance agent not available or missing analyzePerformance method')
       }
     } catch (error) {
       console.error('Performance analysis failed:', error)
-      const errorMessage = error instanceof Error ? error.message : String(error)
-      results['performance'] = { error: errorMessage, suggestions: ['Performance agent unavailable'] }
     }
 
     // Security Analysis
@@ -93,13 +101,9 @@ class AgentManager {
       if (sAgent && sAgent.analyzeSecurity) {
         results['security'] = sAgent.analyzeSecurity()
         this.updateStatus('security', true, results['security'] as Record<string, unknown>)
-      } else {
-        throw new Error('Security agent not available or missing analyzeSecurity method')
       }
     } catch (error) {
       console.error('Security analysis failed:', error)
-      const errorMessage = error instanceof Error ? error.message : String(error)
-      results['security'] = { error: errorMessage, suggestions: ['Security agent unavailable'] }
     }
 
     // Testing Analysis
@@ -109,37 +113,49 @@ class AgentManager {
         const testResults = await tAgent.runAllTests()
         results['testing'] = testResults
         this.updateStatus('testing', true, testResults.summary as unknown as Record<string, unknown>)
-      } else {
-        throw new Error('Testing agent not available or missing runAllTests method')
       }
     } catch (error) {
       console.error('Testing analysis failed:', error)
-      const errorMessage = error instanceof Error ? error.message : String(error)
-      results['testing'] = { error: errorMessage, suggestions: ['Testing agent unavailable'] }
     }
 
-    // Documentation Analysis
+    // Predictive Analysis (Real Data)
     try {
-      const docAgent = this.agents.get('documentation') as typeof documentationAgent
-      if (docAgent && docAgent.generateFullDocumentation) {
-        const docs = docAgent.generateFullDocumentation([], [])
-        results['documentation'] = { components: [], apis: [], documentation: docs }
-        this.updateStatus('documentation', true, docs)
-      } else {
-        throw new Error('Documentation agent not available or missing generateFullDocumentation method')
+      const predAgent = this.agents.get('predictive') as typeof predictiveAgent
+      if (predAgent && predAgent.analyze) {
+        results['predictive'] = predAgent.analyze(data?.logs || [], data?.currentKm || 0, data?.rules)
+        this.updateStatus('predictive', true, results['predictive'] as Record<string, unknown>)
       }
     } catch (error) {
-      console.error('Documentation analysis failed:', error)
-      const errorMessage = error instanceof Error ? error.message : String(error)
-      results['documentation'] = { error: errorMessage, suggestions: ['Documentation agent unavailable'] }
+      console.error('Predictive analysis failed:', error)
     }
 
-    return results as {
-      performance: unknown
-      security: unknown
-      testing: unknown
-      documentation: unknown
+    // Financial Analysis (Real Data)
+    try {
+      const finAgent = this.agents.get('financial') as typeof financialAgent
+      if (finAgent && finAgent.analyze) {
+        results['financial'] = finAgent.analyze(data?.logs || [], data?.currentKm || 0)
+        this.updateStatus('financial', true, results['financial'] as Record<string, unknown>)
+      }
+    } catch (error) {
+      console.error('Financial analysis failed:', error)
     }
+
+    // Wealth Analysis (Real Data)
+    try {
+      const wAgent = this.agents.get('wealth') as typeof wealthAgent
+      if (wAgent && wAgent.analyze) {
+        results['wealth'] = wAgent.analyze(
+          data?.purchasePrice || 0,
+          data?.marketValue || 0,
+          data?.logs || []
+        )
+        this.updateStatus('wealth', true, results['wealth'] as Record<string, unknown>)
+      }
+    } catch (error) {
+      console.error('Wealth analysis failed:', error)
+    }
+
+    return results as any
   }
 
   // Gerar documentação de componentes principais
@@ -192,7 +208,13 @@ class AgentManager {
   }
 
   // Executar agente específico
-  async runAgent(agentName: string): Promise<unknown> {
+  async runAgent(agentName: string, data?: { 
+    logs?: any[], 
+    currentKm?: number, 
+    rules?: any[],
+    purchasePrice?: number,
+    marketValue?: number
+  }): Promise<unknown> {
     const agent = this.agents.get(agentName)
     if (!agent) {
       throw new Error(`Agent ${agentName} not found`)
@@ -217,11 +239,24 @@ class AgentManager {
           }
           break
         case 'predictive':
-          // Em uso real, passaria dados dinâmicos
-          result = (agent as typeof predictiveAgent).analyze([], 0)
+          result = (agent as typeof predictiveAgent).analyze(
+            data?.logs || [], 
+            data?.currentKm || 0, 
+            data?.rules
+          )
           break
         case 'financial':
-          result = (agent as typeof financialAgent).analyze([], 0)
+          result = (agent as typeof financialAgent).analyze(
+            data?.logs || [], 
+            data?.currentKm || 0
+          )
+          break
+        case 'wealth':
+          result = (agent as typeof wealthAgent).analyze(
+            data?.purchasePrice || 0,
+            data?.marketValue || 0,
+            data?.logs || []
+          )
           break
         default:
           throw new Error(`Unknown agent: ${agentName}`)

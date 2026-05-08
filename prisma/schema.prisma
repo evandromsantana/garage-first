@@ -31,6 +31,8 @@ model Vehicle {
   engineNumber String?
   color       String?
   uf          String?
+  purchasePrice Float?
+  currentMarketValue Float?
   currentKm   Int      @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -39,6 +41,7 @@ model Vehicle {
   user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   maintenanceLogs MaintenanceLog[]
   technicalSpecs  TechnicalSpec[]
+  maintenanceRules MaintenanceRule[]
 }
 
 model MaintenanceLog {
@@ -96,4 +99,18 @@ model InventoryItem {
   userId        String
 
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model MaintenanceRule {
+  id          String   @id @default(uuid())
+  vehicleId   String
+  name        String   // Ex: Troca de Óleo
+  intervalKm  Int      // Ex: 5000
+  intervalMonths Int?  // Ex: 6
+  criticality String   // low, medium, high, critical
+  category    String   // engine, brakes, tires, etc
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  vehicle     Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
 }

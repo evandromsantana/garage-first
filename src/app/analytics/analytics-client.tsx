@@ -8,11 +8,18 @@ import { AgentsPanel } from "@/components/dashboard/agents-panel"
 import { MaintenanceRoadmap } from "@/components/analytics/maintenance-roadmap"
 import { HealthScore } from "@/components/analytics/health-score"
 import { SmartInsights } from "@/components/analytics/smart-insights"
+import { useWealthAnalysis } from "@/hooks/use-memoized-data"
+import { WealthAdvisor } from "@/components/analytics/wealth-advisor"
 
 export function AnalyticsClient({ vehicle }: { vehicle: VehicleSummary }) {
-  const predictiveData = usePredictiveMaintenance(vehicle.maintenanceLogs || [], vehicle.currentKm || 0)
+  const predictiveData = usePredictiveMaintenance(
+    vehicle.maintenanceLogs || [], 
+    vehicle.currentKm || 0,
+    vehicle.maintenanceRules || []
+  )
   const memoizedMetrics = useMemoizedMetrics(vehicle)
   const analytics = useMemoizedAnalytics(vehicle)
+  const wealthAnalysis = useWealthAnalysis(vehicle)
 
   // Transform predictive insights into the format expected by SmartInsights
   const formattedInsights = predictiveData.insights.map(insight => ({
@@ -22,6 +29,8 @@ export function AnalyticsClient({ vehicle }: { vehicle: VehicleSummary }) {
 
   return (
     <div className="space-y-10 mt-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <WealthAdvisor analysis={wealthAnalysis} />
+      
       <section className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-1">
           <HealthScore score={analytics.healthScore} />

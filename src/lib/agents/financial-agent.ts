@@ -24,8 +24,13 @@ class FinancialAgent {
     const costPerKm = currentKm > 0 ? totalSpent / currentKm : 0
     const avgTicket = logs.length > 0 ? totalSpent / logs.length : 0
     
-    // Projeção baseada na média mensal (simulada)
-    const projectedYearlyCost = avgTicket * 3 
+    // Projeção baseada na média mensal real
+    const firstLogDate = logs.length > 0 
+      ? new Date(Math.min(...logs.map(l => new Date(l.createdAt).getTime())))
+      : new Date()
+    const monthsOwned = Math.max(1, (new Date().getTime() - firstLogDate.getTime()) / (1000 * 60 * 60 * 24 * 30))
+    const monthlyAvg = totalSpent / monthsOwned
+    const projectedYearlyCost = monthlyAvg * 12
 
     // Score de eficiência (menor custo por KM = maior score)
     let efficiencyScore = 100

@@ -291,6 +291,23 @@ export function useMemoizedAnalytics(vehicle: VehicleSummary) {
   ])
 }
 
+// Hook para análise de patrimônio (Wealth Advisor)
+export function useWealthAnalysis(vehicle: VehicleSummary) {
+  const { wealthAgent } = require('@/lib/agents/wealth-agent')
+  
+  return useMemo(() => {
+    return wealthAgent.analyze(
+      vehicle.purchasePrice || 0,
+      vehicle.currentMarketValue || 0,
+      vehicle.maintenanceLogs || []
+    )
+  }, [
+    vehicle.purchasePrice,
+    vehicle.currentMarketValue,
+    vehicle.maintenanceLogs
+  ])
+}
+
 // Hook para memoizar cache de dados
 export function useDataCache<T>(key: string, fetcher: () => Promise<T>, ttl: number = 5 * 60 * 1000) {
   const cache = useRef<Map<string, { data: T; timestamp: number }>>(new Map())

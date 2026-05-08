@@ -14,6 +14,7 @@ import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
 import { PartList } from "./part-list"
+import { ReceiptScanner } from "./receipt-scanner"
 
 interface Part extends PartInput {
   id: string;
@@ -83,6 +84,19 @@ export default function NewMaintenanceForm({
     setDescription(suggestion)
   }
 
+  const handleScanComplete = (data: any) => {
+    setDescription(data.description)
+    if (data.parts && data.parts.length > 0) {
+      const newParts = data.parts.map((p: any) => ({
+        id: Math.random().toString(),
+        name: p.name,
+        itemCost: p.cost,
+        isOriginalPart: false
+      }))
+      setParts(prev => [...prev, ...newParts])
+    }
+  }
+
   return (
     <div className="min-h-screen bg-background font-mono pb-24">
       <PageHeader
@@ -91,6 +105,10 @@ export default function NewMaintenanceForm({
       />
 
       <main className="p-4 space-y-6 max-w-lg mx-auto">
+        {/* Módulo OCR - Scanner Inteligente */}
+        <section className="animate-in fade-in slide-in-from-top-4 duration-700">
+           <ReceiptScanner onScanComplete={handleScanComplete} />
+        </section>
         <Card className="bg-card border-4 border-foreground rounded-none shadow-none">
           <CardContent className="p-4 space-y-4">
              <div className="space-y-3">

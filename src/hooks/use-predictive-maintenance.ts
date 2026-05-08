@@ -18,10 +18,27 @@ interface UsePredictiveMaintenanceReturn {
   criticalAlerts: PredictiveInsight[]
 }
 
-export function usePredictiveMaintenance(initialLogs: MaintenanceLog[] = [], currentKm: number = 0): UsePredictiveMaintenanceReturn {
+export function usePredictiveMaintenance(
+  initialLogs: MaintenanceLog[] = [], 
+  currentKm: number = 0,
+  customRules: any[] = []
+): UsePredictiveMaintenanceReturn {
   const [currentTime, setCurrentTime] = useState(() => Date.now())
   const maintenanceLogs = useMemo(() => Array.isArray(initialLogs) ? initialLogs : [], [initialLogs])
   
+  // 1. Define as regras ativas (customizadas ou padrão) para todo o hook
+  const activeRules = useMemo(() => {
+    return customRules.length > 0 
+      ? customRules.map(r => ({
+          name: r.name,
+          keyword: r.name,
+          lifespan: r.intervalKm,
+          criticality: r.criticality,
+          category: r.category || 'general'
+        }))
+      : PREDICTIVE_RULES
+  }, [customRules])
+
   useEffect(() => {
     const interval = setInterval(() => setCurrentTime(Date.now()), 60 * 1000)
     return () => clearInterval(interval)
@@ -31,7 +48,7 @@ export function usePredictiveMaintenance(initialLogs: MaintenanceLog[] = [], cur
     const insights: PredictiveInsight[] = []
 
     // Analyze each maintenance type based on rules
-    PREDICTIVE_RULES.forEach(rule => {
+    activeRules.forEach(rule => {
       const relevantLogs = maintenanceLogs.filter(log => 
         log.description.toLowerCase().includes(rule.keyword.toLowerCase())
       )
@@ -60,12 +77,13 @@ export function usePredictiveMaintenance(initialLogs: MaintenanceLog[] = [], cur
         else urgencyScore = 20
 
         // Adjust urgency based on criticality
-        const criticalityMultiplier = {
+        const multipliers: Record<string, number> = {
           low: 0.7,
           medium: 1.0,
           high: 1.3,
           critical: 1.6
-        }[rule.criticality]
+        }
+        const criticalityMultiplier = multipliers[rule.criticality as string] || 1.0
         urgencyScore = Math.min(100, urgencyScore * criticalityMultiplier)
 
         // Generate recommendations
@@ -209,7 +227,7 @@ export function usePredictiveMaintenance(initialLogs: MaintenanceLog[] = [], cur
   }, [maintenanceLogs])
 
   const healthScore = useMemo(() => {
-    const categoryScores = {
+    const categoryScores: Record<string, number> = {
       engine: 100,
       brakes: 100,
       tires: 100,
@@ -219,12 +237,14 @@ export function usePredictiveMaintenance(initialLogs: MaintenanceLog[] = [], cur
 
     // Calculate scores based on overdue maintenance
     insights.forEach(insight => {
-      const rule = PREDICTIVE_RULES.find(r => r.name === insight.name)
-      if (rule && insight.dueKm && currentKm > insight.dueKm) {
+      const rule = activeRules.find(r => r.name === insight.name)
+      if (rule && rule.lifespan && insight.dueKm && currentKm > insight.dueKm) {
         const overdueKm = currentKm - insight.dueKm
         const penalty = Math.min(50, (overdueKm / rule.lifespan) * 50)
-        if (rule.category in categoryScores) {
-          categoryScores[rule.category] = Math.max(0, categoryScores[rule.category] - penalty)
+        const category = rule.category as string
+        if (category && category in categoryScores) {
+          const currentScore = categoryScores[category] ?? 100
+          categoryScores[category] = Math.max(0, currentScore - penalty)
         }
       }
     })
@@ -233,14 +253,14 @@ export function usePredictiveMaintenance(initialLogs: MaintenanceLog[] = [], cur
 
     return {
       overall,
-      engine: categoryScores.engine,
-      brakes: categoryScores.brakes,
-      tires: categoryScores.tires,
-      electronics: categoryScores.electronics,
+      engine: categoryScores['engine'] ?? 100,
+      brakes: categoryScores['brakes'] ?? 100,
+      tires: categoryScores['tires'] ?? 100,
+      electronics: categoryScores['electronics'] ?? 100,
       lastUpdated: new Date(),
       trend: "stable" as const
     }
-  }, [maintenanceLogs, currentKm, insights])
+  }, [maintenanceLogs, currentKm, insights, activeRules])
 
   const projectedCosts = useMemo(() => {
     const next30Days = insights
