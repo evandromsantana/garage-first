@@ -1,6 +1,7 @@
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { VehicleHealthScore } from "@/types";
 import { ShieldAlert, Activity, Droplets, Zap } from "lucide-react"
 
 interface SystemHealth {
@@ -10,12 +11,12 @@ interface SystemHealth {
   icon: React.ReactNode;
 }
 
-export function HealthScore() {
+export function HealthScore({ health }: { health: VehicleHealthScore }) {
   const systems: SystemHealth[] = [
-    { name: "Motor", status: 92, pos: { x: "45%", y: "55%" }, icon: <Activity className="h-4 w-4" /> },
-    { name: "Transmissão", status: 75, pos: { x: "65%", y: "65%" }, icon: <Zap className="h-4 w-4" /> },
-    { name: "Fluidos", status: 88, pos: { x: "40%", y: "45%" }, icon: <Droplets className="h-4 w-4" /> },
-    { name: "Freios", status: 60, pos: { x: "20%", y: "70%" }, icon: <ShieldAlert className="h-4 w-4" /> },
+    { name: "Motor", status: health.engine, pos: { x: "45%", y: "55%" }, icon: <Activity className="h-4 w-4" /> },
+    { name: "Transmissão", status: 100, pos: { x: "65%", y: "65%" }, icon: <Zap className="h-4 w-4" /> }, // Transmissão não tem score específico no hook ainda, usando 100
+    { name: "Fluidos", status: 100, pos: { x: "40%", y: "45%" }, icon: <Droplets className="h-4 w-4" /> },
+    { name: "Freios", status: health.brakes, pos: { x: "20%", y: "70%" }, icon: <ShieldAlert className="h-4 w-4" /> },
   ]
 
   return (
@@ -63,7 +64,9 @@ export function HealthScore() {
         {/* Global Score Seal */}
         <div className="absolute bottom-4 right-4 border-2 border-white p-2 bg-black/80">
            <p className="text-[8px] font-black text-white uppercase leading-none mb-1">Score Geral</p>
-           <p className="text-2xl font-black text-green-500 italic leading-none">82.4</p>
+           <p className={`text-2xl font-black italic leading-none ${health.overall > 80 ? 'text-green-500' : health.overall > 60 ? 'text-yellow-500' : 'text-red-500'}`}>
+             {Math.round(health.overall * 10) / 10}
+           </p>
         </div>
       </CardContent>
     </Card>

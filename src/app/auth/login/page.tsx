@@ -1,4 +1,6 @@
 import { Button } from "@/components/ui/button"
+export const unstable_instant = false
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -8,7 +10,12 @@ import { cookies } from "next/headers"
 import Link from "next/link"
 import { redirect } from "next/navigation"
 
-export default async function LoginPage() {
+export default async function LoginPage({
+  searchParams
+}: {
+  searchParams: Promise<{ error?: string }>
+}) {
+  const { error } = await searchParams
 
   async function login(formData: FormData) {
     "use server"
@@ -23,7 +30,7 @@ export default async function LoginPage() {
     try {
       const user = await authenticateUser({ email, password })
       if (!user) {
-        throw new Error("Email ou senha inválidos")
+        redirect('/auth/login?error=invalid_credentials')
       }
       
       const cookieStore = await cookies()
@@ -34,12 +41,12 @@ export default async function LoginPage() {
         sameSite: 'lax',
         maxAge: 7 * 24 * 60 * 60 // 7 days
       })
-      
-      redirect('/dashboard')
-    } catch (error) {
-      if (error instanceof Error) throw error
-      throw new Error("Erro ao fazer login")
+    } catch (err) {
+      if (err instanceof Error && err.message === 'NEXT_REDIRECT') throw err
+      redirect('/auth/login?error=server_error')
     }
+
+    redirect('/dashboard')
   }
 
   return (
@@ -64,6 +71,11 @@ export default async function LoginPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6">
+            {error && (
+              <div className="mb-6 p-4 bg-destructive/10 border-2 border-destructive text-destructive text-xs font-black uppercase tracking-widest animate-in fade-in zoom-in duration-300">
+                {error === 'invalid_credentials' ? 'Email ou senha incorretos' : 'Erro no servidor. Tente novamente.'}
+              </div>
+            )}
             <form action={login} className="space-y-6">
               <div className="space-y-2">
                 <Label className="text-xs font-black uppercase tracking-widest" htmlFor="email">
@@ -107,12 +119,18 @@ export default async function LoginPage() {
               </Button>
             </form>
 
-            <div className="mt-8 pt-6 border-t-2 border-dashed border-foreground/30 text-center space-y-4">
-              <Link href="/auth/register" className="block text-sm font-black uppercase tracking-widest hover:underline">
-                Não tem conta? Registre seu veículo
-              </Link>
-              <div className="bg-muted p-4 border-2 border-foreground">
-                <p className="text-[10px] font-black uppercase mb-1">Acesso Demonstração</p>
+            <div className="mt-8 pt-6 border-t-2 border-dashed border-foreground/30 text-center space-y-6">
+              <div className="space-y-3">
+                <p className="text-[10px] font-black uppercase tracking-widest opacity-60">Novo por aqui?</p>
+                <Link href="/auth/register" className="block">
+                  <Button variant="outline" className="w-full h-14 border-4 border-foreground rounded-none font-black uppercase tracking-widest hover:bg-foreground hover:text-background transition-none">
+                    CRIAR NOVA CONTA
+                  </Button>
+                </Link>
+              </div>
+
+              <div className="bg-muted p-4 border-2 border-foreground/20">
+                <p className="text-[10px] font-black uppercase mb-1 opacity-60">Acesso Demonstração</p>
                 <p className="text-xs font-bold font-mono">demo@garageninja.com / demo123</p>
               </div>
             </div>

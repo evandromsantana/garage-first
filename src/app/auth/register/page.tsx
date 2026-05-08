@@ -1,4 +1,6 @@
 import { Button } from "@/components/ui/button"
+export const unstable_instant = false
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -29,6 +31,7 @@ export default async function RegisterPage() {
       throw new Error("A senha deve ter pelo menos 6 caracteres")
     }
     
+    let isSuccess = false
     try {
       const user = await createUser({ name, email, password })
       
@@ -41,8 +44,7 @@ export default async function RegisterPage() {
         sameSite: 'lax',
         maxAge: 7 * 24 * 60 * 60 // 7 days
       })
-      
-      redirect('/setup')
+      isSuccess = true
     } catch (error) {
       console.error("Register error:", error)
       
@@ -56,6 +58,10 @@ export default async function RegisterPage() {
         throw error
       }
       throw new Error("Erro ao criar conta")
+    }
+
+    if (isSuccess) {
+      redirect('/setup')
     }
   }
 

@@ -1,4 +1,6 @@
 import { prisma } from "@/lib/db"
+export const unstable_instant = false
+
 import { PageHeader } from "@/components/page-header"
 import { Wrench, Plus, History } from "lucide-react"
 import { Button } from "@/components/ui/button"

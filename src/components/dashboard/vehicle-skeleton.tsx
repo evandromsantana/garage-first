@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { VehicleHealthScore } from "@/types"
-import { ClipboardCheck, Check, AlertTriangle } from "lucide-react"
+import { AlertTriangle, Check, ClipboardCheck } from "lucide-react"
 
 export function VehicleSkeleton({ health }: { health?: VehicleHealthScore }) {
   const InspectionItem = ({ label, score }: { label: string, score: number | undefined }) => {
@@ -43,7 +43,7 @@ export function VehicleSkeleton({ health }: { health?: VehicleHealthScore }) {
   }
 
   return (
-    <Card className="kindle-card">
+    <Card className="border-4 border-foreground rounded-none shadow-[4px_4px_0_0_var(--foreground)]">
       <CardHeader className="pb-4 border-b-4 border-foreground">
         <CardTitle className="text-xl font-black uppercase flex items-center gap-2 italic">
           <ClipboardCheck className="h-6 w-6" />
@@ -59,7 +59,7 @@ export function VehicleSkeleton({ health }: { health?: VehicleHealthScore }) {
         <div className="mt-4 p-4 border-4 border-foreground bg-foreground/5 flex items-center justify-between">
            <span className="text-[10px] font-black uppercase tracking-widest">Score de Integridade</span>
            {health ? (
-             <span className="text-2xl font-black italic">82.4</span>
+             <span className="text-2xl font-black italic">{Math.round(health.overall * 10) / 10}</span>
            ) : (
              <div className="h-8 w-16 bg-muted animate-pulse" />
            )}

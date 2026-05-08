@@ -1,21 +1,21 @@
 "use client"
 
-import { useState, useTransition } from "react"
 import { createInventoryItem } from "@/app/actions"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
 } from "@/components/ui/select"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Plus, Package } from "lucide-react"
-import { toast } from "sonner"
 import { InventoryCategory } from "@/types"
+import { Package, Plus } from "lucide-react"
+import { useState, useTransition } from "react"
+import { toast } from "sonner"
 
 export function AddInventoryItemForm() {
   const [isPending, startTransition] = useTransition()

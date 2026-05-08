@@ -11,7 +11,7 @@ export function OBD2Widget() {
   const [_view, _setView] = useState<"grid" | "flow">("grid")
 
   return (
-    <Card className="kindle-card">
+    <Card className="border-4 border-foreground rounded-none shadow-[4px_4px_0_0_var(--foreground)]">
       <CardHeader className="pb-4 border-b-4 border-foreground flex flex-row items-center justify-between">
         <div className="flex flex-col">
           <CardTitle className="flex items-center gap-2 text-lg font-black uppercase italic">
@@ -37,7 +37,7 @@ export function OBD2Widget() {
         )}
 
         {!data.connected ? (
-          <div className="py-12 flex flex-col items-center justify-center text-center space-y-4">
+          <div className="py-2 flex flex-col items-center justify-center text-center space-y-4">
             <Bluetooth className="h-12 w-12 opacity-10" />
             <p className="text-[10px] font-black text-muted-foreground uppercase px-12 leading-relaxed">
               Conecte o adaptador OBD2 para ler o fluxo de dados em tempo real.
@@ -47,19 +47,19 @@ export function OBD2Widget() {
           <div className="grid grid-cols-2 divide-x-2 divide-foreground">
             <div className="p-6 flex flex-col items-center justify-center border-b-2 border-foreground">
                <span className="text-[9px] font-black uppercase opacity-40 mb-1">Rotação (RPM)</span>
-               <span className="text-4xl font-black italic">{data.rpm}</span>
+               <span className="text-4xl font-black italic">{data.rpm > 0 ? data.rpm : <span className="text-xs animate-pulse">ESCANEANDO...</span>}</span>
             </div>
             <div className="p-6 flex flex-col items-center justify-center border-b-2 border-foreground">
                <span className="text-[9px] font-black uppercase opacity-40 mb-1">Velocidade</span>
-               <span className="text-4xl font-black italic">{data.speed}<span className="text-sm">km/h</span></span>
+               <span className="text-4xl font-black italic">{data.speed > 0 ? `${data.speed}km/h` : <span className="text-xs animate-pulse">WAITING...</span>}</span>
             </div>
             <div className="p-6 flex flex-col items-center justify-center">
                <span className="text-[9px] font-black uppercase opacity-40 mb-1">Temp. Motor</span>
-               <span className="text-4xl font-black italic">{data.temp}°C</span>
+               <span className="text-4xl font-black italic">{data.temp > 0 ? `${data.temp}°C` : <span className="text-xs animate-pulse">READING...</span>}</span>
             </div>
             <div className="p-6 flex flex-col items-center justify-center">
                <span className="text-[9px] font-black uppercase opacity-40 mb-1">Carga Motor</span>
-               <span className="text-4xl font-black italic">{data.engineLoad}%</span>
+               <span className="text-4xl font-black italic">{data.engineLoad > 0 ? `${data.engineLoad}%` : <span className="text-xs animate-pulse">FETCHING...</span>}</span>
             </div>
           </div>
         )}

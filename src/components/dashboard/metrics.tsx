@@ -1,8 +1,8 @@
 "use client"
 
-import { VehicleSummary } from "@/types"
-import { useVehicleMetrics } from "@/hooks/use-vehicle-metrics"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { useVehicleMetrics } from "@/hooks/use-vehicle-metrics"
+import { VehicleSummary } from "@/types"
 import { Calculator } from "lucide-react"
 
 interface DashboardMetricsProps {
@@ -16,8 +16,8 @@ export function DashboardMetrics({ vehicle }: DashboardMetricsProps) {
   const costPerKm = vehicle.currentKm > 0 ? metrics.totalSpent / vehicle.currentKm : 0
   
   return (
-    <Card className="kindle-card">
-      <CardHeader className="border-b-4 border-foreground pb-4">
+    <Card className="border-4 border-foreground rounded-none shadow-[4px_4px_0_0_var(--foreground)]">
+      <CardHeader className="border-b-2 border-foreground pb-2">
         <CardTitle className="text-xl font-black uppercase italic flex items-center gap-2">
           <Calculator className="h-5 w-5" />
           Análise de Eficiência

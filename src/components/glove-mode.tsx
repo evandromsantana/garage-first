@@ -40,6 +40,28 @@ const CHECKLISTS: Record<string, { title: string; items: string[] }> = {
       "LUBRIFICAR CORRENTE (MOTUL C4)",
       "REVITALIZAR PLÁSTICOS NEGROS"
     ]
+  },
+  OLEO: {
+    title: "TROCA DE ÓLEO",
+    items: [
+      "AQUECER MOTOR (2-3 MIN)",
+      "REMOVER PARAFUSO DO DRENO (17MM)",
+      "SUBSTITUIR FILTRO DE ÓLEO",
+      "LIMPAR BUJÃO E TROCAR ARRUELA",
+      "ABASTECER (2.0L SEM FILTRO / 2.3L COM FILTRO)",
+      "VERIFICAR VAZAMENTOS"
+    ]
+  },
+  RELACAO: {
+    title: "AJUSTE DE RELAÇÃO",
+    items: [
+      "LIMPAR CORRENTE COMPLETAMENTE",
+      "MEDIR FOLGA (PADRÃO: 20-30MM)",
+      "SOLTAR EIXO TRASEIRO (27MM)",
+      "AJUSTAR TENSORES SIMETRICAMENTE",
+      "TORQUEAR EIXO (98NM)",
+      "LUBRIFICAR"
+    ]
   }
 }
 

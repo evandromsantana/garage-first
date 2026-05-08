@@ -57,22 +57,20 @@ export function useOBD2() {
 
       setState(prev => ({ ...prev, connected: true }))
 
-      // Simulação de fluxo real para análise
+      // Inicia a comunicação real (Placeholder para comandos AT do ELM327)
+      // No futuro, aqui enviaríamos comandos como '010C' para RPM via GATT
+      toast.success("Adaptador Pareado! Aguardando fluxo telemétrico...")
+      
+      // Manteremos um listener de sinal para indicar que a conexão está viva
       intervalRef.current = setInterval(() => {
-        const newDataPoint: OBDDataPoint = {
-          rpm: Math.floor(Math.random() * (4500 - 1200) + 1200),
-          temp: Math.floor(Math.random() * (95 - 88) + 88),
-          speed: Math.floor(Math.random() * 80),
-          engineLoad: Math.floor(Math.random() * 60) + 20,
-          timestamp: Date.now()
-        }
-
         setState(prev => ({
           ...prev,
-          current: newDataPoint,
-          history: [...prev.history, newDataPoint].slice(-50) // Keep last 50 points
+          current: {
+            ...prev.current,
+            timestamp: Date.now()
+          }
         }))
-      }, 1000)
+      }, 2000)
 
     } catch (err: any) {
       if (err.name !== 'NotFoundError') {

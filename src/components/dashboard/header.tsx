@@ -42,7 +42,7 @@ export function DashboardHeader({
             </div>
           </div>
           <p className="text-[10px] font-black uppercase tracking-[0.4em] opacity-40">
-            {vehicleName} • REGISTRO DE PROCEDÊNCIA
+            {vehicleName}
           </p>
         </div>
 

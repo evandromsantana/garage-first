@@ -159,39 +159,88 @@ class AgentManager {
   }
 
   // Gerar documentação de componentes principais
+  // Gerar documentação de componentes reais escanenando o diretório
   private generateComponentDocs() {
-    // Em ambiente real, isso escanearia os arquivos de componentes
-    return [
-      {
-        name: 'DashboardClient',
-        description: 'Main dashboard component',
-        props: [],
-        usage: '<DashboardClient vehicle={vehicle} pending={pending} />',
-        examples: []
-      },
-      {
-        name: 'DashboardHeader',
-        description: 'Dashboard header component',
-        props: [],
-        usage: '<DashboardHeader vehicle={vehicle} />',
-        examples: []
-      }
-    ]
+    try {
+      const fs = require('fs')
+      const path = require('path')
+      const componentsDir = path.join(process.cwd(), 'src', 'components')
+      
+      if (!fs.existsSync(componentsDir)) return []
+
+      const files = fs.readdirSync(componentsDir)
+        .filter((f: string) => (f.endsWith('.tsx') || f.endsWith('.ts')) && !f.includes('ui'))
+      
+      return files.map((file: string) => {
+        const name = file.replace(/\.(tsx|ts)$/, '')
+        return {
+          name,
+          description: `Componente ${name} do sistema Garage Ninja`,
+          props: [],
+          usage: `<${name} />`,
+          examples: []
+        }
+      })
+    } catch (error) {
+      console.error('Failed to scan components:', error)
+      return [
+        {
+          name: 'DashboardClient',
+          description: 'Main dashboard component',
+          props: [],
+          usage: '<DashboardClient vehicle={vehicle} pending={pending} />',
+          examples: []
+        }
+      ]
+    }
   }
 
-  // Gerar documentação de APIs principais
+  // Gerar documentação de APIs reais escanenando as Server Actions
   private generateAPIDocs() {
-    // Em ambiente real, isso escanearia os arquivos de API
-    return [
-      {
-        endpoint: '/api/auth/login',
-        method: 'POST',
-        description: 'User login endpoint',
-        parameters: [],
-        responses: [],
-        example: 'fetch("/api/auth/login", { method: "POST", body: JSON.stringify({ email, password }) })'
-      }
-    ]
+    try {
+      const fs = require('fs')
+      const path = require('path')
+      const actionsDir = path.join(process.cwd(), 'src', 'app', 'actions')
+      
+      if (!fs.existsSync(actionsDir)) return []
+
+      const files = fs.readdirSync(actionsDir)
+        .filter((f: string) => f.endsWith('.ts'))
+      
+      const apis: any[] = []
+      
+      files.forEach((file: string) => {
+        const content = fs.readFileSync(path.join(actionsDir, file), 'utf-8')
+        const actionNames = content.match(/export async function (\w+)/g)
+        
+        if (actionNames) {
+          actionNames.forEach((match: string) => {
+            const name = match.replace('export async function ', '')
+            apis.push({
+              endpoint: `Action: ${name}`,
+              method: 'POST',
+              description: `Server Action ${name} em ${file}`,
+              parameters: [],
+              responses: [],
+              example: `await ${name}(...)`
+            })
+          })
+        }
+      })
+      
+      return apis
+    } catch (error) {
+      return [
+        {
+          endpoint: '/api/auth/login',
+          method: 'POST',
+          description: 'User login endpoint',
+          parameters: [],
+          responses: [],
+          example: 'fetch("/api/auth/login", { method: "POST", body: JSON.stringify({ email, password }) })'
+        }
+      ]
+    }
   }
 
   // Atualizar status do agente

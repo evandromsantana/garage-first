@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Camera, Check, Hand, Play, Wrench } from "lucide-react"
+import { Camera, Check, Droplets, Hand, Play, Settings, Wrench } from "lucide-react"
 
 interface MainMenuProps {
   onShowGuides: () => void
@@ -63,30 +63,59 @@ export function MainMenu({
           <div className="grid grid-cols-2 gap-4">
              <Button 
                size="lg" 
+               className="h-28 text-xl font-black rounded-none border-4 border-foreground bg-white text-foreground shadow-[4px_4px_0_0_var(--foreground)] flex-col" 
+               onClick={() => onShowChecklist("OLEO")}
+             >
+               <Droplets className="h-8 w-8 mb-1" />
+               ÓLEO
+             </Button>
+
+             <Button 
+               size="lg" 
+               className="h-28 text-xl font-black rounded-none border-4 border-foreground bg-white text-foreground shadow-[4px_4px_0_0_var(--foreground)] flex-col" 
+               onClick={() => onShowChecklist("RELACAO")}
+             >
+               <Settings className="h-8 w-8 mb-1" />
+               RELAÇÃO
+             </Button>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+             <Button 
+               size="lg" 
+               className="h-28 text-xl font-black rounded-none border-4 border-foreground bg-white text-foreground shadow-[4px_4px_0_0_var(--foreground)] flex-col" 
+               onClick={() => onShowChecklist("LAVAGEM")}
+             >
+               <Check className="h-8 w-8 mb-1" />
+               LAVAGEM
+             </Button>
+
+             <Button 
+               size="lg" 
                className="h-28 text-xl font-black rounded-none border-4 border-foreground bg-muted text-foreground shadow-[4px_4px_0_0_var(--foreground)] flex-col" 
                onClick={onShowTorques}
              >
                <Wrench className="h-8 w-8 mb-1" />
                TORQUES
              </Button>
-             
-             <div className="relative">
-               <Input 
-                 type="file" 
-                 accept="image/*" 
-                 capture="environment" 
-                 onChange={onPhotoCapture} 
-                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
-               />
-               <Button 
-                 variant="outline" 
-                 size="lg" 
-                 className="w-full h-28 text-xl font-black rounded-none border-4 border-foreground bg-white text-foreground shadow-[4px_4px_0_0_var(--foreground)] flex-col"
-               >
-                 <Camera className="h-8 w-8 mb-1" />
-                 FOTO
-               </Button>
-             </div>
+          </div>
+          
+          <div className="relative">
+            <Input 
+              type="file" 
+              accept="image/*" 
+              capture="environment" 
+              onChange={onPhotoCapture} 
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
+            />
+            <Button 
+              variant="outline" 
+              size="lg" 
+              className="w-full h-28 text-xl font-black rounded-none border-4 border-foreground bg-foreground text-background shadow-[4px_4px_0_0_var(--foreground)]"
+            >
+              <Camera className="h-10 w-10 mr-3" />
+              CAPTURAR EVIDÊNCIA
+            </Button>
           </div>
         </div>
       </div>

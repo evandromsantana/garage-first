@@ -1,9 +1,9 @@
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Wrench, ChevronRight } from "lucide-react"
-import Link from "next/link"
 import { MaintenanceLogSummary } from "@/types"
+import { ChevronRight, Wrench } from "lucide-react"
+import Link from "next/link"
 
 interface RecentHistoryProps {
   logs: MaintenanceLogSummary[]
@@ -11,7 +11,7 @@ interface RecentHistoryProps {
 
 export function RecentHistory({ logs = [] }: RecentHistoryProps) {
   return (
-    <Card className="kindle-card">
+    <Card className="border-4 border-foreground rounded-none shadow-[4px_4px_0_0_var(--foreground)]">
       <CardHeader className="pb-4 border-b-4 border-foreground">
         <CardTitle className="text-xl font-black uppercase flex items-center gap-2 italic">
           <Wrench className="h-6 w-6" />

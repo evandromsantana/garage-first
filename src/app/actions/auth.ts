@@ -5,6 +5,15 @@ import { redirect } from 'next/navigation'
 
 export async function logout() {
   const cookieStore = await cookies()
-  cookieStore.delete('auth-token')
+  
+  // Garantir remoção do cookie em todos os paths
+  cookieStore.set('auth-token', '', {
+    maxAge: 0,
+    path: '/',
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax'
+  })
+  
   redirect('/auth/login')
 }

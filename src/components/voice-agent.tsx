@@ -1,11 +1,11 @@
 "use client"
 
 import { Button } from '@/components/ui/button'
+import { useGloveMode } from '@/contexts/glove-mode'
 import { Loader2, Mic, MicOff } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { useGloveMode } from '@/contexts/glove-mode'
 
 // Declare Web Speech API types for TypeScript
 declare global {

@@ -1,4 +1,6 @@
 import { getVehicleWithData } from "@/app/actions"
+export const unstable_instant = false
+
 import { PageHeader } from "@/components/page-header"
 import { PrintButton } from "@/components/print-button"
 import { formatCurrency } from "@/lib"

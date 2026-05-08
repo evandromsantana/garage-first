@@ -1,4 +1,6 @@
 import { getInventoryItems, getPendingMaintenance, getTechnicalSpecs } from "@/app/actions"
+export const unstable_instant = false
+
 import DashboardClient from "@/components/dashboard-client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"

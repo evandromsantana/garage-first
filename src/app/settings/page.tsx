@@ -1,4 +1,6 @@
 import Link from "next/link"
+export const unstable_instant = false
+
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Settings, FileText, Bot, Cloud, AlertTriangle, LogOut } from "lucide-react"
@@ -13,6 +15,7 @@ import { AppPreferences } from "./app-preferences"
 import { VehicleSettingsForm } from "@/components/settings/vehicle-settings-form"
 import { TechnicalSpecsManager } from "@/components/settings/technical-specs-manager"
 import { MaintenanceRulesManager } from "@/components/settings/maintenance-rules-manager"
+import { LogoutButton } from "@/components/auth/logout-button"
 
 export default async function SettingsPage() {
   const cookieStore = await cookies()
@@ -110,15 +113,7 @@ export default async function SettingsPage() {
                   <p className="text-sm font-bold">Encerrar Sessão</p>
                   <p className="text-xs text-muted-foreground">Sair com segurança desta conta neste dispositivo.</p>
                 </div>
-                <form action={logout}>
-                  <Button 
-                    variant="destructive" 
-                    className="h-12 px-6 border-4 border-destructive bg-background text-destructive hover:bg-destructive hover:text-background transition-none font-black uppercase tracking-widest flex items-center gap-2"
-                  >
-                    <LogOut className="h-4 w-4" />
-                    Sair
-                  </Button>
-                </form>
+                <LogoutButton />
               </div>
             </CardContent>
           </Card>

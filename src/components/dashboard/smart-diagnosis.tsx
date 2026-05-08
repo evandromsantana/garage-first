@@ -7,9 +7,10 @@ import { Loader2, Search, Sparkles } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
 
+import { diagnoseSymptom } from "@/app/actions/diagnosis"
 import { DiagnosisResult } from "./diagnosis-result"
 
-export function SmartDiagnosis() {
+export function SmartDiagnosis({ vehicleName }: { vehicleName: string }) {
   const [query, setQuery] = useState("")
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [diagnosis, setDiagnosis] = useState<null | {
@@ -24,49 +25,25 @@ export function SmartDiagnosis() {
     setDiagnosis(null)
 
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500))
-      
-      const q = query.toLowerCase()
-      if (q.includes("barulho") || q.includes("metal") || q.includes("batendo")) {
-        setDiagnosis({
-          likelyCause: "ANOMALIA MECÂNICA: CABEÇOTE / VALVULÁRIO",
-          severity: "medium",
-          recommendation: "REQUISITADO: INSPEÇÃO DE FOLGA DE VÁLVULAS. TORQUE PADRÃO: 12NM."
-        })
-      } else if (q.includes("pneu") || q.includes("instável") || q.includes("vibra")) {
-        setDiagnosis({
-          likelyCause: "INSTABILIDADE DINÂMICA: RODAGEM",
-          severity: "low",
-          recommendation: "REQUISITADO: VERIFICAR TWI (DESGASTE) E REALIZAR BALANCEAMENTO ESTÁTICO."
-        })
-      } else if (q.includes("liga") || q.includes("partida") || q.includes("bateria")) {
-        setDiagnosis({
-          likelyCause: "FALHA ELÉTRICA CRÍTICA: SISTEMA DE CARGA",
-          severity: "high",
-          recommendation: "REQUISITADO: TESTE DE ESTATOR E RETIFICADOR. VOLTAGEM EM REPOUSO > 12.6V."
-        })
-      } else {
-        setDiagnosis({
-          likelyCause: "ANOMALIA TÉCNICA NÃO CATALOGADA",
-          severity: "medium",
-          recommendation: "REQUISITADO: VARREDURA OBD2 COMPLETA E CHECAGEM DE CÓDIGOS DE ERRO ATIVOS."
-        })
-      }
+      const result = await diagnoseSymptom(query)
+      setDiagnosis(result)
       toast.success("Análise de Diagnóstico Concluída")
+    } catch (error) {
+      toast.error("Erro ao realizar diagnóstico. Tente novamente.")
     } finally {
       setIsAnalyzing(false)
     }
   }
 
   return (
-    <Card className="kindle-card">
+    <Card className="border-4 border-foreground rounded-none shadow-[4px_4px_0_0_var(--foreground)]">
       <CardHeader className="pb-3 border-b-4 border-foreground">
-        <CardTitle className="flex items-center gap-2 text-lg font-black uppercase italic tracking-tighter">
+        <CardTitle className="flex items-center gap-2 text-sm font-black uppercase italic tracking-tighter">
           <Sparkles className="h-6 w-6" />
           DIAGNÓSTICO TÉCNICO ASSISTIDO
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-5 space-y-5">
+      <CardContent className="p-4 space-y-2">
         <div className="space-y-2">
           <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">INPUT DE TELEMETRIA / SINTOMAS</label>
           <div className="flex gap-3">
@@ -90,7 +67,7 @@ export function SmartDiagnosis() {
 
         <div className="pt-2 flex items-center justify-center gap-4 opacity-40">
           <div className="h-[1px] flex-grow bg-foreground" />
-          <span className="text-[9px] font-black uppercase tracking-widest whitespace-nowrap">Ninja 400 Expert AI</span>
+          <span className="text-[9px] font-black uppercase tracking-widest whitespace-nowrap">{vehicleName} Expert AI</span>
           <div className="h-[1px] flex-grow bg-foreground" />
         </div>
       </CardContent>

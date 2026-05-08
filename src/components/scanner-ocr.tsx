@@ -5,9 +5,12 @@ import { Button } from "@/components/ui/button"
 import { Camera, Scan, X, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 
+import { createWorker } from 'tesseract.js'
+
 export function ScannerOCR({ onScanResult }: { onScanResult: (text: string) => void }) {
   const [isOpen, setIsOpen] = useState(false)
   const [isScanning, setIsScanning] = useState(false)
+  const [progress, setProgress] = useState(0)
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [stream, setStream] = useState<MediaStream | null>(null)
@@ -55,23 +58,33 @@ export function ScannerOCR({ onScanResult }: { onScanResult: (text: string) => v
     context.drawImage(video, 0, 0, canvas.width, canvas.height)
 
     setIsScanning(true)
+    setProgress(0)
     
-    // Simulação da chamada da API do Gemini para OCR
     try {
-      toast.info("Analisando código da peça com IA...")
+      toast.info("Iniciando motor de reconhecimento ótico...")
       
-      // MOCK: Na implementação real, enviaríamos base64Image para uma Server Action que chama a API do Gemini:
-      // const result = await processOCRAction(base64Image)
+      const worker = await createWorker('por', 1, {
+        logger: m => {
+          if (m.status === 'recognizing text') {
+            setProgress(Math.round(m.progress * 100))
+          }
+        }
+      })
       
-      await new Promise(resolve => setTimeout(resolve, 2000)) // delay fake
+      const { data: { text } } = await worker.recognize(canvas.toDataURL('image/png'))
+      await worker.terminate()
       
-      // Resultado fake do OCR de uma peça de Ninja 400
-      const mockResult = "16097-0008 Filtro de Óleo Original"
+      const result = text.trim()
       
-      onScanResult(mockResult)
-      toast.success("Peça identificada com sucesso!")
-      stopCamera()
+      if (result) {
+        onScanResult(result)
+        toast.success("Texto extraído com sucesso!")
+        stopCamera()
+      } else {
+        toast.warning("Nenhum texto detectado na imagem.")
+      }
     } catch (error) {
+      console.error("OCR Error:", error)
       toast.error("Falha ao analisar a imagem.")
     } finally {
       setIsScanning(false)
@@ -141,25 +154,39 @@ export function ScannerOCR({ onScanResult }: { onScanResult: (text: string) => v
       <div className="absolute top-20 right-4 z-50">
          {/* Fallback para tirar foto pelo input nativo caso o video não rode bem */}
          <label className="bg-foreground text-background font-bold text-[10px] uppercase px-3 py-2 cursor-pointer border-2 border-background">
-           <input 
-             type="file" 
-             accept="image/*" 
-             capture="environment"
-             className="hidden" 
-             onChange={(e) => {
-               if (e.target.files && e.target.files.length > 0) {
-                 setIsScanning(true)
-                 // Simulate API call for uploaded file
-                 toast.info("Analisando foto da peça...")
-                 setTimeout(() => {
-                   onScanResult("16097-0008 Filtro Original")
-                   toast.success("Peça identificada!")
-                   setIsScanning(false)
-                   stopCamera()
-                 }, 2000)
-               }
-             }}
-           />
+            <input 
+              type="file" 
+              accept="image/*" 
+              capture="environment"
+              className="hidden" 
+              onChange={async (e) => {
+                if (e.target.files && e.target.files.length > 0) {
+                  const file = e.target.files[0]
+                  setIsScanning(true)
+                  setProgress(0)
+                  toast.info("Analisando foto da peça...")
+                  
+                  try {
+                    const worker = await createWorker('por')
+                    const imageUrl = URL.createObjectURL(file)
+                    const { data: { text } } = await worker.recognize(imageUrl)
+                    await worker.terminate()
+                    
+                    if (text.trim()) {
+                      onScanResult(text.trim())
+                      toast.success("Texto extraído!")
+                      stopCamera()
+                    } else {
+                      toast.warning("Nenhum texto detectado.")
+                    }
+                  } catch (error) {
+                    toast.error("Erro ao processar foto.")
+                  } finally {
+                    setIsScanning(false)
+                  }
+                }
+              }}
+            />
            TIRAR FOTO
          </label>
       </div>

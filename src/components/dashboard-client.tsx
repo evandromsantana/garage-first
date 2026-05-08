@@ -10,6 +10,7 @@ import { PendingTasks } from "@/components/dashboard/pending-tasks"
 import { QuickActions } from "@/components/dashboard/quick-actions"
 import { RecentHistory } from "@/components/dashboard/recent-history"
 import { SmartDiagnosis } from "@/components/dashboard/smart-diagnosis"
+import { HealthScore } from "@/components/dashboard/health-score"
 import { VehicleSkeleton } from "@/components/dashboard/vehicle-skeleton"
 import { FAB } from "@/components/fab"
 import { GloveMode } from "@/components/glove-mode"
@@ -19,7 +20,7 @@ import { MAINTENANCE_TYPE_MAP } from "@/lib/constants/maintenance"
 import { haptics } from "@/lib/haptics"
 import { InventoryItem, PendingTask, TechnicalSpec, VehicleSummary } from "@/types"
 import { Plus, ShieldCheck } from "lucide-react"
-import { useState, useEffect } from "react"
+import { useEffect, useState } from "react"
 import { toast } from "sonner"
 
 interface DashboardClientProps {
@@ -75,24 +76,30 @@ export default function DashboardClient({ vehicle, pending, inventory, specs }: 
 
       <main className="max-w-4xl mx-auto space-y-10 pb-20">
         
-        {/* Core Vehicle Stats & Inspection */}
         <section className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <DashboardMetrics vehicle={vehicle} />
-          <VehicleSkeleton health={predictiveData.healthScore} />
+          <HealthScore health={predictiveData.healthScore} />
         </section>
 
-        {/* Quick Actions Grid */}
         <QuickActions />
 
-        {/* Predictive Intelligence */}
+        <section className="grid grid-cols-1 md:grid-cols-1 gap-8">
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 border-b-2 border-foreground pb-2">
+                <ShieldCheck className="h-4 w-4" />
+                <h3 className="text-xs font-black uppercase tracking-widest">Inteligência Preditiva</h3>
+              </div>
+              <SmartDiagnosis vehicleName={vehicle.model}  />
+             <InventoryAlertWidget items={inventory} />
+            </div>
+        </section>
+
         <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
            <div className="space-y-4">
              <div className="flex items-center gap-2 border-b-2 border-foreground pb-2">
                <ShieldCheck className="h-4 w-4" />
-               <h3 className="text-xs font-black uppercase tracking-widest">Inteligência Preditiva</h3>
+               <h3 className="text-xs font-black uppercase tracking-widest">Próximas Recomendações</h3>
              </div>
-             <SmartDiagnosis />
-             <InventoryAlertWidget items={inventory} />
              <LazyMaintenanceForecastWrapper insights={predictiveData.insights} nextMaintenanceDate={predictiveData.nextMaintenanceDate} />
            </div>
            
