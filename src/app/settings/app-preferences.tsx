@@ -9,7 +9,7 @@ import { useEffect, useState } from "react"
 export function AppPreferences() {
   const [voiceEnabled, setVoiceEnabled] = useState(true)
   const [notifications, setNotifications] = useState(true)
-  const [offlineMode, setOfflineMode] = useState(true)
+  const [offlineMode, _setOfflineMode] = useState(true)
 
   useEffect(() => {
     const savedVoice = localStorage.getItem('ninja-voice-enabled')

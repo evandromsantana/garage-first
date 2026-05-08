@@ -3,7 +3,7 @@
 import { VehicleSummary } from "@/types"
 import { useVehicleMetrics } from "@/hooks/use-vehicle-metrics"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Gauge, Calculator } from "lucide-react"
+import { Calculator } from "lucide-react"
 
 interface DashboardMetricsProps {
   vehicle: VehicleSummary

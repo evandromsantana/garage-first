@@ -5,7 +5,7 @@ import { VehicleHealthScore } from "@/types"
 import { ClipboardCheck, Check, AlertTriangle } from "lucide-react"
 
 export function VehicleSkeleton({ health }: { health?: VehicleHealthScore }) {
-  const InspectionItem = ({ label, score }: { label: string, score?: number }) => {
+  const InspectionItem = ({ label, score }: { label: string, score: number | undefined }) => {
     // Se não houver score, mostra o estado de carregamento
     if (score === undefined) {
       return (

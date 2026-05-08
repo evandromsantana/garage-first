@@ -27,7 +27,7 @@ export function useVehicleMetrics(vehicle: VehicleSummary): VehicleMetrics {
   }, [])
 
   const staticMetrics = useMemo(() => {
-    const { maintenanceLogs, currentKm } = vehicle
+    const { maintenanceLogs } = vehicle
 
     // Calculate total spent
     const totalSpent = maintenanceLogs.reduce(

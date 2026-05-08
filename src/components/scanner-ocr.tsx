@@ -53,7 +53,6 @@ export function ScannerOCR({ onScanResult }: { onScanResult: (text: string) => v
     if (!context) return
     
     context.drawImage(video, 0, 0, canvas.width, canvas.height)
-    const base64Image = canvas.toDataURL('image/jpeg', 0.8)
 
     setIsScanning(true)
     

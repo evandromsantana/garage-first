@@ -8,7 +8,6 @@ import { OfflineIndicator } from "@/components/offline-indicator";
 import { ThemeScript } from "@/components/theme-script";
 import { QueryProvider } from "@/lib/query-client";
 import { GloveModeProvider } from "@/contexts/glove-mode";
-import { VoiceAgent } from "@/components/voice-agent";
 
 // Font estilo Kindle - serif para leitura confortável
 const merriweather = Merriweather({

@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { PageHeader } from "@/components/page-header"
 import { Input } from "@/components/ui/input"
-import { AlertCircle, Wrench, Settings2, Droplets, Book, Search } from "lucide-react"
+import { AlertCircle, Settings2, Droplets, Book, Search } from "lucide-react"
 import { OEM_PARTS, FLUID_CAPACITIES, DIAGNOSTIC_CODES } from "@/lib/technical-data"
 
 export default function TechnicalCenterPage() {

@@ -7,8 +7,8 @@ import { Bluetooth } from "lucide-react"
 import { useState } from "react"
 
 export function OBD2Widget() {
-  const { data, history, error, connect, disconnect } = useOBD2()
-  const [view, setView] = useState<"grid" | "flow">("grid")
+  const { data, history: _, error, connect, disconnect } = useOBD2()
+  const [_view, _setView] = useState<"grid" | "flow">("grid")
 
   return (
     <Card className="kindle-card">

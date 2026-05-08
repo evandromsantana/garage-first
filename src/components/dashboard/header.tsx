@@ -27,7 +27,7 @@ export function DashboardHeader({
   alerts, 
   unreadCount, 
   criticalCount,
-  onMarkAsRead,
+  onMarkAsRead: _,
   onMarkAllAsRead,
   onClearAlerts
 }: DashboardHeaderProps) {

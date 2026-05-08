@@ -187,7 +187,6 @@ export function useMemoizedSearch<T extends Record<string, any>>(items: T[], sea
 // Hook para memoizar cálculos de analytics
 export function useMemoizedAnalytics(vehicle: VehicleSummary) {
   const maintenanceLogs = vehicle.maintenanceLogs || []
-  const currentKm = vehicle.currentKm || 0
 
   // Análise temporal
   const monthlySpending = useMemo(() => {

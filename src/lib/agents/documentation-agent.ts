@@ -94,7 +94,7 @@ class DocumentationAgent {
   }
 
   // Salvar documentação em arquivo
-  async saveDocumentation(content: string, filename: string): Promise<void> {
+  async saveDocumentation(_content: string, filename: string): Promise<void> {
     // Em ambiente real, isso salvaria no sistema de arquivos usando fs ou similar
     console.log(`[Documentation] Saving ${filename}`)
     // console.log(content)

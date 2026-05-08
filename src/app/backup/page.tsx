@@ -6,7 +6,7 @@ import { loadOrCreateVehicle, getVehicleWithData } from "@/app/actions"
 import { requireAuth } from "@/lib/auth-server"
 
 export default async function BackupPage() {
-  const user = await requireAuth()
+  await requireAuth()
   const vehicleBase = await loadOrCreateVehicle()
   const vehicle = await getVehicleWithData(vehicleBase.id)
 

@@ -8,9 +8,7 @@ import { cookies } from "next/headers"
 import Link from "next/link"
 import { redirect } from "next/navigation"
 
-export default async function LoginPage(props: { searchParams: Promise<{ message?: string }> }) {
-  const searchParams = await props.searchParams
-  const message = searchParams?.message
+export default async function LoginPage() {
 
   async function login(formData: FormData) {
     "use server"

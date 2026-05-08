@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, Wrench, BarChart2, Settings, BookOpen } from "lucide-react"
+import { Home, Wrench, BarChart2, BookOpen } from "lucide-react"
 import { useGloveMode } from "@/contexts/glove-mode"
 import { haptics } from "@/lib/haptics"
 

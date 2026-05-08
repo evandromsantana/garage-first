@@ -19,7 +19,7 @@ export default async function SetupPage() {
       throw new Error("Todos os campos são obrigatórios")
     }
     
-    const user = await requireAuth()
+    await requireAuth()
     
     await createVehicle({
       model,

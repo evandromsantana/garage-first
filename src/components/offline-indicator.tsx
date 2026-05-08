@@ -9,10 +9,13 @@ export function OfflineIndicator() {
   const [showReconnected, setShowReconnected] = useState(false)
 
   useEffect(() => {
+    let timer: NodeJS.Timeout
     if (!isOffline && wasOffline) {
       setShowReconnected(true)
-      const timer = setTimeout(() => setShowReconnected(false), 3000)
-      return () => clearTimeout(timer)
+      timer = setTimeout(() => setShowReconnected(false), 3000)
+    }
+    return () => {
+      if (timer) clearTimeout(timer)
     }
   }, [isOffline, wasOffline])
 

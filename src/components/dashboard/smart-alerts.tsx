@@ -18,10 +18,10 @@ interface SmartAlertsProps {
 export function SmartAlerts({ 
   alerts, 
   unreadCount, 
-  criticalCount, 
+  criticalCount: _criticalCount, 
   onMarkAsRead, 
   onMarkAllAsRead, 
-  onClearAlerts 
+  onClearAlerts: _onClearAlerts 
 }: SmartAlertsProps) {
   const getSeverityIcon = (severity: string) => {
     switch (severity) {
@@ -36,18 +36,6 @@ export function SmartAlerts({
     }
   }
 
-  const getSeverityStyle = (severity: string) => {
-    switch (severity) {
-      case "critical":
-        return "bg-foreground text-background border-4 border-foreground"
-      case "error":
-        return "bg-background text-foreground border-4 border-foreground"
-      case "warning":
-        return "bg-background text-foreground border-4 border-foreground border-double"
-      default:
-        return "bg-background text-foreground border-2 border-foreground border-dashed"
-    }
-  }
 
   const displayAlerts = alerts.slice(0, 5)
 
